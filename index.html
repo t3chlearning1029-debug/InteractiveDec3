@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SE Troubleshooting Decision Tree</title>
+<style>
+  :root {
+    
+--se-green: #009e4d;
+  --se-dark: #222;
+  --se-gray: #6b7280;
+  --se-border: #e5e7eb;
+  --se-bg: #f5f7f9;
+  --se-card: #ffffff;
+
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --card: #141922; --text: #e5e7eb; --muted: #b6c0cc;
+      --accent: #4ea2ff; --accent-weak: #0d2a52; --border: #243042;
+      --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--se-bg);
+  color: var(--se-dark);
+}
+  header{
+background: var(--se-green);
+  color: white;
+  padding: 16px 24px;
+}
+  h1{
+font-size: 1.4rem;
+  margin: 0;
+}
+
+.top-navbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 24px;
+    background:white;
+    border-bottom:1px solid var(--se-border);
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+    position:sticky;
+    top:0;
+    z-index:1000;
+}
+
+.nav-btn{
+    border:none;
+    border-radius:6px;
+    padding:10px 16px;
+    cursor:pointer;
+    font-weight:600;
+    background:#f3f4f6;
+    transition:0.2s;
+}
+
+.nav-btn:hover{
+    background:#e5e7eb;
+}
+
+.nav-primary{
+    background:var(--se-green);
+    color:white;
+}
+
+#nodeView {
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* move to top */
+    align-items: center;         /* keep centered horizontally */
+    text-align: center;
+    width: 100%;
+    padding-top: 20px;           /* adjust spacing from top */
+}
+
+#nodeView .question {
+    text-align: center;
+    max-width: 900px;
+    margin-bottom: 20px;
+}
+
+#nodeView .options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+#nodeView .step {
+    max-width: 700px;
+    width: 100%;
+    margin: 8px auto;
+    text-align: center;
+}
+
+#nodeView .tag.action {
+    text-align: center;
+    margin: 20px auto;
+}
+
+  .subtitle{margin:0;color:var(--muted)}
+  main{max-width:1100px;margin:24px auto;padding:0 16px}
+  
+  @media (max-width: 900px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+  .panel{
+background: var(--se-card);
+  border: 1px solid var(--se-border);
+  border-radius: 8px;
+}
+  .panel h2{
+background: #fafafa;
+  padding: 12px;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--se-border);
+  text-transform: uppercase;
+}
+  .panel-body{padding: 16px;}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+  .btn{
+border: 1px solid var(--se-border);
+  background: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+  .btn.accent{
+background: var(--se-green);
+  color: white;
+  border: none;
+
+}
+  .btn:hover {
+  opacity: 0.9;
+}
+  .btn.good{border-color:var(--good);color:#fff;background:var(--good)}
+  .btn.warn{border-color:var(--warn);color:#111;background:var(--warn)}
+  .btn.bad{border-color:var(--bad);color:#fff;background:var(--bad)}
+  .select{
+width: 100%;
+  padding: 10px;
+  border: 1px solid var(--se-border);
+  border-radius: 6px;
+  
+}
+
+.batt-good {
+    color: #16a34a;
+    font-weight: bold;
+}
+
+.batt-old {
+    color: #dc2626;
+    font-weight: bold;
+}
+.node{
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:right;
+    text-align:right;
+    min-height:auto;
+    padding-top:10px;
+}
+
+.model-row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.model-row .select{
+    flex:1;
+}
+
+.go-btn{
+    background:var(--se-green);
+    color:white;
+    border:none;
+    border-radius:6px;
+    padding:10px 16px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.go-btn:hover{
+    opacity:.9;
+}
+
+
+
+  .note{color:var(--muted);font-size:.95rem;margin-top:8px}
+  .path{list-style:none;padding:0;margin:0}
+  .path li{font-size: 0.85rem;}
+  .path li.current{background:var(--accent-weak);border-left:4px solid var(--accent)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;margin-left:6px;border:1px solid var(--border)}
+  .tag.symptom{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}
+  .tag.action{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
+  .footer{margin-top:24px;text-align:center;color:var(--muted)}
+  .hidden{display:none}
+
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* 33% / 67% */
+    gap: 20px;
+    align-items: start;
+}
+
+.left-column {
+    background: var(--se-card);
+    border: 1px solid var(--se-border);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.right-column {
+    background: var(--se-card);
+    border: 1px solid var(--se-border);
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 70vh;
+}
+
+#nodeView{
+    min-height:auto;
+}
+
+.path-panel{
+    margin-top:20px;
+}
+
+#regionPage{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    background:#f5f7f9;
+}
+
+.region-container{
+    text-align:center;
+}
+
+.region-btn{
+    display:block;
+    width:250px;
+    margin:10px auto;
+    padding:15px;
+    border:none;
+    border-radius:8px;
+    background:#009e4d;
+    color:white;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.region-btn:hover{
+    opacity:.9;
+}
+
+</style>
+</head>
+<body>
+  
+<header>
+  <h1>Secure Power Product Decision Tree</h1>
+  <p class="subtitle">by  <a href="https://se.eightfold.ai/careerhub/profile/e8mVZl37op/experience?displayPersona=own" target="_blank" rel="noopener noreferrer">Allen Clyde Gadayan</a></p>
+</header>
+
+<nav class="top-navbar">
+    
+    <button id="backBtn" class="nav-btn">◀ Back</button>
+    <button id="restartBtn" class="nav-btn">↻ Restart</button>
+    <button id="printBtn" class="nav-btn">🖨 Print</button>
+    <button id="exportBtn" class="nav-btn">📄 Export</button>
+</nav>
+
+
+</div>
+
+<div id="regionPage">
+    <div class="region-container">
+        <h1>Select Region</h1>
+
+        <button class="region-btn" data-region="North America">North America</button>
+        <button class="region-btn" data-region="Latin America">Latin America</button>
+        <button class="region-btn" data-region="Asia Pacific">Asia Pacific</button>
+        <button class="region-btn" data-region="Europe">Europe</button>
+        <button class="region-btn" data-region="Middle East and Africa">Middle East and Africa</button>
+        
+    </div>
+</div>
+
+
+  <div id="appContent" style="display:none;">
+
+
+
+<main>
+  <div class="layout">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-column">
+
+        <h2>Case Details</h2>
+
+        <input id="caseNumber" class="select" placeholder="Case Number">
+        <input id="regionInput"
+       class="select"
+       readonly
+       placeholder="Region">
+
+        <input id="engineerName" class="select"
+               placeholder="Engineer Name">
+
+        <input id="mainConcern" class="select"
+               placeholder="Main Concern">
+
+        <div class="model-row">
+    <input id="modelInput"
+           class="select"
+           placeholder="Model">
+
+    <button id="modelGoBtn"
+            type="button"
+            class="go-btn">
+        ►
+    </button>
+      </div>
+
+        <div id="detectedFamily" class="step">
+            Product Family: Not Detected
+        </div>
+
+        <input id="serialInput" class="select"
+               placeholder="Serial">
+
+            
+        <div id="dynamicFields"></div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-column">
+
+        <h2>Decision Tree</h2>
+
+        <div id="nodeView" class="node"></div>
+
+    </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  
+  
+</main>
+
+<script>
+// === Decision Tree Data ===
+// Structure: tree[symptom] = { start: 'nodeId', nodes: { nodeId: { type, text, options or steps } } }
+
+
+
+
+let savedNoPowerWorking = {
+  issueStart: "N/A",
+  recentChanges: "N/A",
+  priorErrors: "N/A",
+  stepsDone: "N/A"
+};
+
+const decisionTree = {
+
+
+
+  
+  "Uninterruptible Power Supply UPS": {
+    start: "nd_q1",
+    nodes: {
+      nd_q1: { type: "question", text: "Need help with what Product Line?", options: [
+        { label: "Back-UPS SX3", next: "Backups_issue" },
+        { label: "Back-UPS", next: "Backups_issue" },
+        { label: "Back-UPS Pro", next: "Backups_issue" },
+        { label: "Back-UPS Connect", next: "Backups_issue" },
+        { label: "Easy UPS", next: "ups_issue" },
+        { label: "Smart-UPS", next: "Smartups_issue" },
+        { label: "Smart-UPS Ultra", next: "Smartups_issue" },
+        { label: "Smart-UPS On-Line", next: "SmartupsOL_issue" },
+        { label: "Easy UPS On-Line", next: "SmartupsOL_issue_issue" },
+        { label: "Galaxy VS", next: "ups_issue" },
+        { label: "Galaxy VM", next: "ups_issue" },
+        { label: "Galaxy VL", next: "ups_issue" },
+        { label: "Galaxy VXL", next: "ups_issue" },
+        { label: "Galaxy 3L Pro", next: "ups_issue" },
+        { label: "Easy UPS 3S Pro", next: "ups_issue" },
+        { label: "Easy UPS 3L", next: "ups_issue" },
+        { label: "Easy UPS 3S", next: "ups_issue" },
+        { label: "Easy UPS 3M", next: "ups_issue" },
+        { label: "Symmetra PX", next: "ups_issue" },
+        { label: "Symmetra LX/RM", next: "ups_issue" },
+        { label: "Special Procedure", next: "special_procedure" }
+      ]},
+
+
+    
+
+    special_procedure: { type: "question", text: "Please select the request:", options: [
+        { label: "Technical Expert Analysis", next: "TEX" },
+        { label: "Request for Analysis", next: "RFA" }
+        ]},
+
+    TEX: { type: "question", text: "Who requests for TEX", options: [
+        { label: "Internal Customer", next: "internal" },
+        { label: "External Customer", next: "external" }
+        ]},
+
+    internal: { type: "question", text: "Which Country?", options: [
+        { label: "Malaysia", next: "internal_my" },
+        { label: "Singapore", next: "internal_sg" },
+        { label: "Philippines", next: "internal_ph" },
+        { label: "Others", next: "internal_others" }
+        ]},
+
+    
+    internal_my: { type: "action", text: "Please make sure to gather the following:", steps: [
+        "TEX Reporting Form.",
+        "Service Report / Work Order Information",
+        "Images of the affected spare part or unit.",
+        "Gather customer information."], next: "end_escalate" },
+
+    internal_sg: { type: "action", text: "Please make sure to gather the following:", steps: [
+        "TEX Reporting Form.",
+        "Service Report / Work Order Information",
+        "Images of the affected spare part or unit.",
+        "Gather customer information."], next: "end_escalate" }, 
+
+    internal_ph: { type: "action", text: "Please make sure to gather the following:", steps: [
+        "TEX Reporting Form.",
+        "Service Report / Work Order Information",
+        "Images of the affected spare part or unit.",
+        "Gather customer information."], next: "end_escalate" },
+
+    internal_others: { type: "action", text: "Please make sure to gather the following:", steps: [
+        "TEX Reporting Form.",
+        "Service Report / Work Order Information",
+        "Images of the affected spare part or unit.",
+        "Gather customer information."], next: "end_escalate" }, 
+
+   
+
+    RFA: { type: "action", text: "Kindly gather the following information:", steps: [
+        "Please share the model of the all the loads including the expansion.",
+        "How much runtime is needed?",
+        "Is shutdown software needed? What OS is used by the load?",
+        "Identify the compatible UPS.",
+        "Check the runtime chart."], next: "sizing1" }, 
+
+    
+    Backups_issue: { type: "question", text: "What is the concern?", options: [
+        { label: "Potential Safety Incident", next: "ups_issue_psi" },
+        { label: "UPS will not turn On", next: "no_power" },
+        { label: "Alarm Present", next: "backups_alarm" },
+        { label: "Runtime Concern", next: "rtime" },
+        { label: "Sizing UPS", next: "sizing" }
+        ]},
+
+
+    rtime: {type: "question", text: "When did they notice the issue?", options: [
+        { label: "Upon Install", next: "rtime1" },
+        { label: "Working for a while.", next: "rtime2" }
+        ]
+    },
+
+    rtime2: {type: "question", text: "Have they replaced the battery?", options: [
+        { label: "Yes", next: "rtime1" },
+        { label: "No", next: "oldbatt_action" }
+        ]
+    },
+    
+
+    
+
+batteryage: {
+  type: "action",
+  text: "Have they replaced the battery?",
+  steps: [
+    "Battery age will be calculated automatically."
+  ],
+  next: "batteryage_auto"
+},
+
+
+
+// ✅ NEW BATTERY (good condition)
+newbatt_action: {
+  type: "action",
+  text: 'Battery is relatively new. Perform Battery Calibration <a href="https://www.se.com/ph/en/faqs/FA158947/" target="_blank" rel="noopener noreferrer">FA158947</a>',
+  steps: [
+    "Check load percentage",
+    "Verify expected runtime via runtime chart"
+  ],
+  next: "newruntime1"
+},
+
+// ✅ OLD BATTERY (likely degraded)
+oldbatt_action: {
+  type: "action",
+  text: "Battery is aged",
+  steps: [
+    "Battery may be degraded",
+    "Recommend battery replacement",
+    "Verify if runtime improves after replacement"
+  ],
+  next: "newruntime1"
+},
+
+    
+
+
+    rtime1: {type: "question", text: "What is the Battery Age?", options: [
+        { label: "New", next: "newruntime" },
+        { label: "2 Years and up", next: "oldbatt_action" }
+        ]
+    },
+
+    
+
+    newruntime: {type: "question", text: "Are the loads attached within 10% of the UPS capacity?", options: [
+        { label: "Yes", next: "battcalib" },
+        { label: "No", next: "noload" }
+        ]
+          
+  },
+
+  noload: {type: "question", text: 'Advise customer to prepare what is mentioned on <a href="https://www.se.com/ph/en/faqs/FA284198/" target="_blank" rel="noopener noreferrer">FA284198 </a> for calibration.', options: [
+        { label: "Done", next: "battcalib" },
+        { label: "Needs to Schedule", next: "end_notfixed" }
+        ]
+          
+  },
+
+  
+
+ battcalib: {type: "question", text: 'Kindly follow <a href="https://www.se.com/ph/en/faqs/FA284198/" target="_blank" rel="noopener noreferrer">FA284198 </a>for battery calibration.', options: [
+        { label: "Manual", next: "calib_manual" },
+        { label: "PowerChute", next: "calib_powerchute" },
+        { label: "NMC", next: "calib_nmc" },
+        { label: "Cannot Perform", next: "end_notfixed" }
+        ]},
+
+  calib_manual: {type: "question", text: 'Able to perform Manual Battery Calibration?', options: [
+        { label: "Yes", next: "newruntime1" },
+        { label: "No", next: "manual_reason" }
+        ]
+    },
+
+  manual_reason: {
+    type: "text",
+    text: "Request screenshot if applicable. Please specify why Battery Calibration cannot be performed:",
+    next: "end_escalate"
+},  
+
+  calib_powerchute: {type: "question", text: 'Able to perform PowerChute Battery Calibration?', options: [
+        { label: "Yes", next: "newruntime1" },
+        { label: "No", next: "manual_reason" }
+        ]
+    },
+
+  calib_nmc: {type: "question", text: 'Able to perform NMC Battery Calibration?', options: [
+        { label: "Yes", next: "newruntime1" },
+        { label: "No", next: "manual_reason" }
+        ]
+    },
+
+
+  
+  newruntime1: {type: "question", text: "Check if runtime is close to the Estimated Runtime on our website. Issue Resolved?", options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "end_escalate" }
+        ]},
+
+          
+  
+
+     oldrtime: {type: "question", text: "Are the loads attached within 10% of the UPS capacity?", options: [
+        { label: "Yes", next: "newruntime" },
+        { label: "No", next: "oldrtime" }
+        ]
+    },
+
+    backups_alarm: {type: "question", text: 'Please take note of the Visual and Audible Alarm present and refer to UPS User Guide for the list. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA158827/" target="_blank">FA158827</a> ', options: [
+        { label: "Available on the User Guide", next: "alarm1" },
+        { label: "Not available on the User Guide", next: "alarm2" }
+        ]
+    },
+
+      
+    alarm1: {type: "question", text: "Please follow the recommended action on the user guide. Is issue resolved?", options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "RMA Needed", next: "EA_RMA" },
+        { label: "No", next: "alarm2" }
+        ]      
+    },
+
+    alarm2: {type: "question", text: 'Kindly follow <a href="https://www.se.com/ph/en/faqs/FA158947/" target="_blank">FA158947</a>. Is issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "EA_RMA" }
+        ]  
+  },
+   
+
+    SmartupsOL_issue: { type: "question", text: "What is the concern?", options: [
+        { label: "Potential Safety Incident", next: "ups_issue_psi" },
+        { label: "UPS will not turn On", next: "no_power" },
+        { label: "SmartUPS Online Fault", next: "srt_fault" },
+        { label: "Sizing UPS", next: "sizing" }
+        ]},
+
+
+    srt_fault: { type: "question", text: "SmartUPS Online Model", options: [
+        { label: "1-1.5kVA", next: "srt_fault2" },
+        { label: "2.2-3kVA", next: "srt_fault2" },
+        { label: "5-6kVA", next: "srt_fault2" },
+        { label: "8-10kVA", next: "srt_fault2" },
+        { label: "SRTL", next: "srt_fault2" }
+        ]},
+        
+    srt_fault2: { type: "action", text: "Please review FA284195", steps: [
+        "Please make sure the correct tab in the SRT Symptom Selector is followed.",
+        "Make sure to check the fault code and LCD Error if they matches",
+        "Please follow the recommended action."], next: "srt_fault3" },
+
+    srt_fault3: { type: "question", text: "Issue Resolved? ", options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "RMA Needed", next: "EA_RMA" },
+        { label: "No", next: "end_escalate" }
+    ]},
+
+
+    
+    sizing: { type: "action", text: "Kindly gather the following information:", steps: [
+        "Please share the model of the all the loads including the expansion.",
+        "How much runtime is needed?",
+        "Is shutdown software needed? What OS is used by the load?",
+        "Identify the compatible UPS.",
+        "Check the runtime chart."], next: "sizing1" }, 
+
+    sizing1: { type: "question", text: "Able to identify compatible UPS ", options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "end_escalate" }
+
+        ]},
+
+
+    no_power: { type: "question", text: "When did they notice the concern?", options: [
+        { label: "Upon Install", next: "no_power_install" },
+        { label: "It has been working.", next: "no_power_working" }
+
+        ]},
+
+    no_power_working: { type: "action", text: "Kindly gather the following information:", steps: [
+        "When did the issue started? ",
+        "Any recent changes or power related problem?",
+        "Any error present prior the concern",
+        "What are the troubleshooting performed prior contacting support?"], next: "no_power_install" }, 
+
+    
+no_power_install: { type: "action", text: 'Kindly follow <a href="https://www.se.com/ph/en/faqs/FA158815/" target="_blank">FA158815</a>', steps: [
+    "Problem #1: Battery is disconnected.",
+    "Problem #2: There is a problem with the power coming from the wall.",
+    "Problem #3: The Circuit Breaker tripped."
+], next: "no_power_install1" },
+
+no_power_install1: { type: "question", text: 'Confirm if battery is seated correctly, reseat if applicable. Issue resolved?', options: [
+    { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "no_power_install2" }
+          ]},     
+
+no_power_install2: { type: "question", text: 'There is a problem with the power coming from the wall. - try a known-working outlet or if another UPS is present try to swap the power source. Issue resolved?', options: [
+    { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "no_power_install3" }
+          ]},     
+ 
+no_power_install3: { type: "question", text: 'The Circuit Breaker tripped, try to reset if applicable. Issue resolved?', options: [
+    { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "no_power_install4" }
+          ]},     
+
+    no_power_install6: { type: "question", text: "Issue Resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},     
+
+
+      no_power_install4: { type: "question", text: "Is Parts Activation Required?", options: [
+          { label: "Yes", next: "parts_activation" },
+          { label: "No", next: "EA_RMA" }
+          ]},     
+
+           
+    
+    
+
+    ups_issue_psi: { type: "action", text: 'Kindly refer to <a href="https://schneiderelectric.sharepoint.com/sites/TExTechVaultGroup/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FTExTechVaultGroup%2FShared%20Documents%2FGeneral%2FSecure%20Power%2FTraining%20Materials%2FProcess%2FPotential%20Safety%20Incident%20Guide%2Epdf&parent=%2Fsites%2FTExTechVaultGroup%2FShared%20Documents%2FGeneral%2FSecure%20Power%2FTraining%20Materials%2FProcess" target="_blank">PSI Guide</a>', steps: [
+        "Personal Injury or Customer Property and/or surroundings of the unit got damaged.",
+        "Deformation or Hole in the case.",
+        "Battery is hot, and someone was burned",
+        "Battery fluid contacting customer premises or person.",
+        "Thermal smell and/or smoke which causes illness/sickness to the customer (i.e., headache).",
+        "Customer reported that they had medical help.",
+        "Arch flash or another event tied to an FSB.",
+        "Fire Department was contacted or dispatched by alarm or building evacuation.",
+        "Multiple PSI cases on a single account.",
+        "Multiple PSI replacements on a single account.",
+        "Customer exhibits intense fear on the line and asks for TEX (depends on the situation)."], next: "ups_issue_psi1" }, 
+
+    ups_issue_psi1: { type: "question", text: "Is the customer's concern falls under the PSI category?", options: [
+          { label: "Yes", next: "psi_questionnaire" },
+          { label: "No", next: "Backups_issue" }
+          ]},     
+
+        
+    psi_questionnaire: { type: "action", text: "Please gather the following whenever applicable:", steps: [
+        "Could you please send photo(s) of the damage on the unit or your property if the customer reports any damage?.",
+        "Is this the first installation of the product, or was it already in use?",
+        "When was the last battery replacement carried out?",
+        "Can you provide a detailed sequence of events? Please explain what happened.",
+        "Was there any foul weather or electrical work being done near the time of the incident? If yes, could you provide details about the work being done and the name of the electrical company involved?",
+        "Can you provide the date and time when the incident occurred?",
+        "Which equipment is connected to the APC/SE product?",
+        "How are they connected? Are they directly connected to the APC/SE product or through an extension cord or power strip?",
+        "Can you specify which equipment got damaged (both SE and non-SE, or customer's property)?",
+        "Have you contacted emergency services or reported any injuries? If yes, could you provide the name of the agency, contact's name, and phone number?",
+        "Determine the customer’s state of mind, whether you are angry, scared, or considering legal action."], next: "end_escalate" },
+
+
+    EA_RMA: { type: "action", text: 'Please follow <a href="https://schneiderelectric.sharepoint.com/:f:/r/sites/CaviteHub-Onetech-SecurePower/East%20Asia%20Process/RMA%20Email%20Template?csf=1&web=1&e=G5OXzI" target="_blank" rel="noopener noreferrer">RMA</a> Process.', steps: [
+    ], next: "EMAIL_TEMPLATE" },
+        
+        
+    EMAIL_TEMPLATE: { type: "action", text: 'Please follow EA <a href="https://schneiderelectric.sharepoint.com/:w:/r/sites/CaviteHub-Onetech-SecurePower/_layouts/15/Doc.aspx?sourcedoc=%7B2ACB869B-D0B0-44DB-A45E-0EBE087C30B7%7D&file=Singapore%20Email%20template%20-%20Updated.docx&action=default&mobileredirect=true" target="_blank" rel="noopener noreferrer">RMA Template</a>.', steps: [
+        ], next: "end_notfixed" },   
+
+  
+    
+      end_fixed: { type: "end", text: "Issue resolved - Educate the customer" },
+      end_notfixed: { type: "end", text: "Set Proper Expectation." },
+      end_escalate: { type: "end", text: "Consult with Advanced" }
+
+          
+    }
+  },
+
+ 
+
+    "Data Center Infrastructure Management (DCIM) Software": {
+    start: "nd_q1",
+    nodes: {
+      nd_q1: { type: "question", text: "Need help with what Product Line?", options: [
+        { label: "Data Center Operation", next: "redirect_no_display" },
+        { label: "Ecostruxure IT Advisor Cooling Optimize", next: "np_action_basic_power" },
+        { label: "Ecostruxure IT Data Center Expert", next: "redirect_no_display" },
+        { label: "Ecostruxure IT Expert", next: "np_action_basic_power" },
+        { label: "Netbotz", next: "redirect_no_display" },
+        { label: "Network Management Cards", next: "nd_q2" },
+        { label: "PowerChute Network Shutdown", next: "redirect_no_display" },
+        { label: "PowerChute Serial Shutdown", next: "np_action_basic_power" },
+        { label: "Ecostruxure IT Smartconnect", next: "redirect_no_display" },
+        { label: "Ecostruxure IT Advisor", next: "np_action_basic_power" }
+      ]},
+      nd_q2: { type: "question", text: "Need help with what NMC?", options: [
+        { label: "AP9630", next: "nd_q3" },
+        { label: "AP9631", next: "nd_q3" },
+        { label: "AP9640", next: "nd_q3" },
+        { label: "AP9641", next: "nd_q3" },
+        { label: "AP9643", next: "nd_q3" },
+        { label: "AP9644", next: "nd_q3" },
+        { label: "AP9544", next: "nd_q3" },
+        { label: "AP9547", next: "nd_q3" },
+        { label: "E3SOPT001", next: "nd_q3" }
+      ]},
+    
+      nd_q3: { type: "question", text: "What is the concern?", options: [
+        { label: "Cannot access the Web Interface", next: "nd_q4" },
+        { label: "Unauthorized user attempting to access Web", next: "unauthorized_web" },
+        { label: "NMC Firmware Upgrade", next: "nmc_fw" },
+        { label: "Unauthorized user attempting to access SNMP", next: "unauthorized_snmp" }
+      ]},
+
+
+      nmc_fw: { type: "question", text: "What is the current NMC version?", options: [
+        { label: "x.x.x.", next: "xxx" },
+        { label: "x.x.x.x", next: "xxxx" }
+      ]},
+
+      xxxx: { type: "question", text: "Which version of Firmware?", options: [
+        { label: "Secure NMC System (3.x.x.x)", next: "sns" },
+        { label: "Non-Secure NMC System (2.x.x.x)", next: "nsns" }
+
+        ]},
+
+      sns: { type: "action",  steps: [
+        "Download SFNMC3SNST from our website: (https://www.se.com/ph/en/product/SFNMC3SNST/secure-nmc-system-tool-for-ups-and-pdu-proactive-cybersecurity-and-firmware-management/)",
+        "Customer needs to make sure they download the tool for the Operating System they are going to use."], next: "sns_1" },
+
+        sns_1: { type: "question", text: "What is the Operating System they wish to install:", options: [
+          { label: "Windows", next: "Win" },
+          { label: "Linux", next: "Lin" },
+          { label: "MAC", next: "Mac" }
+          ]},     
+
+    
+      unauthorized_snmp: { type: "action",  steps: [
+        "Request the NMC debug.tar: (https://www.se.com/ph/en/faqs/FA156131/)",
+        "Confirm if the alarm is present on the event.txt.",
+        "Ask the customer to identify the IP address on the alarm and ask the customer to investigate if a user owns it",
+        "Determine if the IP address do have a Network Scanner or SNMP application that maybe trying to retrieve details from the NMC",
+        "You may follow: https://www.se.com/ph/en/faqs/FAQ000262764/"], next: "unauthorized_snmp1" }, 
+      
+      unauthorized_snmp1: { type: "question", text: "Issue Resolved", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},     
+
+      unauthorized_web: { type: "action",  steps: [
+        "Request the NMC debug.tar: (https://www.se.com/ph/en/faqs/FA156131/)",
+        "Confirm if the alarm is present on the event.txt.",
+        "Ask the customer to identify the IP address on the alarm and ask the customer to investigate if a user owns it",
+        "Explain to customer that this error happens when someone is trying to access the NMC using the wrong credentials",
+        "You may simulate this but asking the customer to try logging in with the wrong credentials and check the event logs after"], next: "unauthorized_web1" },   
+
+      unauthorized_web1: { type: "question", text: "Issue Resolved", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},     
+
+      nd_q4: { type: "question", text: "What is the error message?", options: [
+        { label: "Cannot display the webpage", next: "nd_q5" },
+        { label: "Protected Object This object on the APC Management Web Server is protected.", next: "protected_object" },
+        { label: "Unauthorized user attempting to access Web", next: "redirect_no_display" }]},
+
+      nd_q5: { type: "question", text: "When did they notice the issue?", options: [
+          { label: "Commissioning", next: "nd_nmcled"},
+          { label: "Have been working for some time", next: "nmcworked" }
+      ]},
+      
+
+      
+      nmcworked: {
+        type: "action", text: "Please check what happened recently that might have caused the issue:",steps: [
+          "Notes"
+        ],
+        next: "nd_nmcled"
+      },
+
+
+
+      protected_object: { type: "question", text: "Is this the first time happening?", options: [
+          { label: "Yes", next: "protected_object1"},
+          { label: "No", next: "protected_object2" }
+      ]},
+
+       protected_object1: { type: "action",  steps: [
+        "Make sure the customer is using this url: https://xxx.xxx.xxx.xxx" ], next: "protected_object3" },
+
+      protected_object2: { type: "question", text: "Any changes happened recently in relation to SSL Certificate?", options: [
+          { label: "Yes", next: "protected_object_SSL" },
+          { label: "No", next: "end_escalate" }
+          ]},     
+
+      protected_object_SSL: { type: "action",  steps: [
+        "Enable HTTP via SSH/Telnet",
+        "Ask the customer if there is a need to update the current SSL added to the NMC. Disable SSL.",
+        "Ask customer to delete the current SSL certificate: https://www.se.com/ph/en/faqs/FAQ000233142/ ",
+        "Enable SSL and reboot NMC"], next: "protected_object_SSL1" },   
+
+      protected_object_SSL1: { type: "question", text: "Issue Resolved", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},     
+
+      
+
+
+      nd_nmcled: { type: "question", text: 'What is the NMC Status LED present? You may refer to <a href="https://www.se.com/ph/en/faqs/FA265129/" target="_blank" rel="noopener noreferrer">FA265129.</a> ', options: [
+          { label: "Off", next: "nd_action_led_Off" },
+          { label: "Solid Green", next: "nd_action_led_solid_green" },
+          { label: "Flashing Green", next: "nd_action_led_flashing_green" },
+          { label: "Solid Orange", next: "nd_action_led_solid_orange" }, 
+          { label: "Flickering Orange", next: "nd_action_led_flickering_orange" }
+      ]},
+
+    nd_action_led_flickering_orange: { type: "action",  steps: [
+        "NMC is in Boot Monitor Mode. Reboot or disconnect the cable."], next: "nd_action_led_flickering_orange1" },
+
+    nd_action_led_flickering_orange1: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},   
+
+    nd_action_led_flashing_green: { type: "action",  steps: [
+        "Make sure the NMC is connected to a DHCP server or Static IP is assigned correctly.",
+        "Try to use a known-working network cable and network port (on switch/router).",
+        "Restart the NMC: Reseat or Press the reset button twice.",
+        "Try another known-working UPS or NMC"], next: "nd_action_led_flashing_green1" },
+
+    nd_action_led_flashing_green1: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},   
+
+    nd_action_led_solid_orange: { type: "action",  steps: [
+        "Reseat the NMC",
+        "Access boot monitor and issue factory_reset (https://www.se.com/ph/en/faqs/FA293874/)",
+        "Make sure to request for screen shot or recording"], next: "nd_action_led_solid_orange1" },
+
+    nd_action_led_solid_orange1: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},
+
+    nd_action_led_solid_green: { type: "question", text: "Is the NMC IP pingable?", options: [
+          { label: "Yes", next: "nd_pingable" },
+          { label: "No", next: "nmc_no_cli" }
+          ]},
+
+   
+    nd_pingable: {
+    type: "action",
+    text: `
+        Try to access the NMC via SSH/Telnet
+        <br><br>
+        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/Doc.aspx?sourcedoc={626aeeb7-e164-4eca-94fe-1c5d98c872cb}&amp;action=embedview&amp;wdAr=1.3333333333333333" width="476px" height="288px" frameborder="0" title="PowerPoint Viewer">This is an embedded <a target="_blank" href="https://office.com">Microsoft Office</a> presentation, powered by <a target="_blank" href="https://office.com/webapps">Office</a>.</iframe>
+
+           
+    `,
+    steps: [
+        "Open Putty/TeraTerm",
+        "Please input the IP address of the NMC",
+        "Choose the connection type/Service as SSH/Telnet. If one fails try the other connection"
+    ],
+    next: "nd_pingable_1"
+},
+
+
+    nd_pingable_1: { type: "question", text: "Is the NMC accessible via SSH/Telnet?", options: [
+          { label: "Yes", next: "nmc_cli" },
+          { label: "No", next: "nmc_no_cli" }
+          ]},
+
+    nmc_cli: { type: "action", text: `
+        Check NMC Web Configuration
+        <br><br>
+        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=8a4d4bc0-f39a-4980-bfd8-0c72bd0ffedd&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="webCLI.mp4"></iframe>
+    `, steps: [
+        "Check if Http/Https is enabled",
+        "If Https is enabled make sure to use https:// when accessing the web."], next: "nd_pingable_2" },
+
+    nd_pingable_2: { type: "question", text: "Is the NMC accessible via Web Interface using HTTPS?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "no_ssl" }
+          ]},    
+
+    no_ssl: { type: "question", text: `
+        Access the NMC via Telnet/SSH and enable HTTP then access the web again. Are they able to access the web?
+        <br><br>
+        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=8a4d4bc0-f39a-4980-bfd8-0c72bd0ffedd&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="webCLI.mp4"></iframe>
+    `, options: [
+          { label: "Yes", next: "nmc_security_wizard" },
+          { label: "No", next: "end_escalate" }
+          ]},      
+          
+    nmc_security_wizard: { type: "question", text: "Which SSL Configuration Method are they using?", options: [
+          { label: "Default certificate auto-generated", next: "auto_ssl" },
+          { label: "Use the NMC Security Wizard CLI", next: "no_ssl" },
+          { label: "Use the Certificate Authority", next: "no_ssl" },
+          { label: "Customer is not certain", next: "no_ssl" }
+          ]},    
+
+    auto_ssl: { type: "question", text: "Which SSL Configuration Method are they using?", options: [
+          { label: "Default certificate auto-generated", next: "auto_ssl" },
+          { label: "Use the NMC Security Wizard CLI", next: "no_ssl" },
+          { label: "Use the Certificate Authority", next: "no_ssl" },
+          { label: "Customer is not certain", next: "no_ssl" }
+          ]},          
+
+
+    nmc_no_cli: { type: "action",  steps: [
+        "Access the NMC via local connection: https://www.se.com/ph/en/faqs/FA293874/ ",
+        "Check if Http/Https is enabled",
+        "If Https is enabled make sure to use https:// when accessing the web.",
+        "Try to check if Http is enabled. Enable it via SSH/Telnet and check web interface again"], next: "nd_pingable_2" },
+
+
+    mc_cli: { type: "action",  steps: [
+        "Check if Http/Https is enabled",
+        "If Https is enabled make sure to use https:// when accessing the web.",
+        "Try to check if Http is enabled. Enable it via SSH/Telnet"], next: "nd_pingable_1" },    
+
+    
+    nd_action_led_Off: { type: "question", text: 'Is the NMC compatible? Please check NMC compatibility with the UPS using <a href="https://www.se.com/ph/en/faqs/FA237786/" target="_blank" rel="noopener noreferrer">FA237786</a>.', options: [
+          { label: "Yes", next: "nd_action_led_Off1" },
+          { label: "No", next: "not_compatible" }
+          ]},
+
+      not_compatible: { type: "action",  steps: [
+        "Educate the customer and provide recommended unit"], next: "end_not_compatible" },
+
+      end_not_compatible: { type: "end", text: "Educated the customer" },
+
+      nd_action_led_Off1: { type: "question", text: "Check Network Connection by trying a known-working ethernet cable or network port on the switch. Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "nd_action_led_Off2" }
+          ]},
+      
+      nd_action_led_Off2: { type: "question", text: "Try to reseat the NMC or if there is another working identical NMC try to swap to determine the cause. Issue resolved?", options: [
+          { label: "Issue Stays with UPS", next: "end_smartslot" },
+          { label: "No", next: "end_smartslot" },
+          { label: "Issue Stays with NMC or No Available working unit", next: "boot_monitor" }
+          ]},
+      
+      boot_monitor: { type: "question", text: 'Try to access the NMC via Boot Monitor and do factory reset and you can refer to <a href="https://www.se.com/ph/en/faqs/FA293874/" target="_blank" rel="noopener noreferrer">FA293874</a>. Issue resolved?', options: [
+          { label: "LED is now present", next: "nmc_configuration" },
+          { label: "NMC LED is Off", next: "end_escalate" }
+          ]},
+     
+       nmc_configuration: { type: "question", text: 'Try to configure the NMC using <a href="https://www.se.com/ph/en/faqs/FA156064/" target="_blank" rel="noopener noreferrer">FA156064</a>. Issue resolved?', options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "nd_nmcled" }
+          ]},  
+
+      nd_q7: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "nd_q8" }  
+             ]},
+
+      nd_q8: { type: "question", text: "Can the customer try a different Compatible UPS if available?", options: [
+            { label: "Available", next: "avail" },
+            { label: "Not available", next: "end_escalate" }  
+         ]},
+
+      avail: { type: "question", text: "Issue resolved after using a compatible UPS?", options: [
+          { label: "Yes", next: "end_escalate" },
+          { label: "No", next: "end_escalate" }  
+             ]},  
+
+      nd_q9: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }  
+             ]},  
+
+      nd_q10: { type: "question", text: "Can the customer try a different Compatible UPS if available?", options: [
+            { label: "Yes", next: "end_fixed" },
+            { label: "No", next: "nd_q8" }  
+         ]},
+      end_fixed: { type: "end", text: "Issue resolved - Educate the customer" },
+      end_smartslot: { type: "end", text: "Informed customer that issue is related to NMC smart-slot and needs to be replaced. Please proceed accordingly." },
+      end_escalate: { type: "end", text: "Consult with Advanced" }
+    }
+  },
+
+
+
+    "IT Power Distribution": {
+    start: "pdu_q1",
+    nodes: { 
+      pdu_q1: { type: "question", text: "Need help with what Product Line?", options: [
+       
+      ]},
+       
+      pdu_q2: { type: "question", text: "What is the customer's concern?", options: [
+        { label: "Power-Related Concern", next: "pdu_power" },
+        { label: "NMC-Related Issue", next: "unauthorized_web" }
+      ]},
+
+      pdu_power: { type: "question", text: "Please select the customer's concern", options: [
+        { label: "PDU not providing output", next: "pdu_nopower" },
+        { label: "Load Calculation", next: "pdu_load" }
+      ]},
+
+      pdu_nopower: { type: "question", text: "Please select the customer's concern", options: [
+        { label: "No output power on all outlets.", next: "pdu_nopowerall" },
+        { label: "No output power on some or group of outlets.", next: "pdu_nopowersome" }
+      ]},
+
+      pdu_nopowerall: { type: "question", text: "Please select the customer's concern", options: [
+        { label: "No output power on all outlets.", next: "pdu_nopowerall" },
+        { label: "No output power on some or group of outlets.", next: "pdu_load" }
+      ]},
+
+      pdu_nopowersome: { type: "question", text: "Please select the customer's concern", options: [
+        { label: "No output power on all outlets.", next: "pdu_nopowerall" },
+        { label: "No output power on some or group of outlets.", next: "pdu_load" }
+      ]},
+
+
+      
+      end_fixed: { type: "end", text: "Issue resolved - Educate the customer" },
+      end_smartslot: { type: "end", text: "Informed customer that issue is related to NMC smart-slot and needs to be replaced. Please proceed accordingly." },
+      end_escalate: { type: "end", text: "Consult with Advanced" }
+    }
+  },
+
+  "Low Voltage Products and Systems": {
+    start: "ev_q1",
+    nodes: { 
+      
+       
+      ev_q1: { type: "question", text: "What is the customer's concern?", options: [
+        { label: "Card not recognized", next: "ev_card" },
+        { label: "NMC-Related Issue", next: "unauthorized_web" }
+      ]},
+
+      ev_card: { type: "question", text: "When did the customer encounter the issue?", options: [
+        { label: "Commissioning", next: "ev_new" },
+        { label: "Working for a while", next: "pdu_load" }
+      ]},
+
+      ev_new: { type: "question", text: "What is the LED present on the unit?", options: [
+        { label: "Green", next: "ev_led_green" },
+        { label: "Working for a while", next: "pdu_load" }
+      ]}, 
+
+      ev_led_green: { type: "question", text: "Please check bluetooth comms using the application, is the device detected?", options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "ev_notdetected" }
+      ]}, 
+
+      ev_notdetected: {
+  type: "question",
+  text: 'Kindly perform factory reset: <a href="https://www.se.com/ae/en/faqs/FAQ000234240/" target="_blank" rel="noopener noreferrer">FAQ000234240</a>. Issue resolved?',
+  options: [
+    { label: "Yes", next: "end_fixed" },
+    { label: "No", next: "ev_firmware" }
+  ]},
+
+  ev_firmware: {
+  type: "question",
+  text: 'Perform firmware upgrade. Issue resolved?',
+  options: [
+    { label: "Yes", next: "end_fixed" },
+      { label: "No", next: "end_escalate" }
+  ]},
+      
+      end_fixed: { type: "end", text: "Issue resolved - Educate the customer" },
+      end_smartslot: { type: "end", text: "Informed customer that issue is related to NMC smart-slot and needs to be replaced. Please proceed accordingly." },
+      end_escalate: { type: "end", text: "Consult with Advanced" }
+    }
+  },
+
+
+  "Building Automation and Control": {
+    start: "aut_1",
+    nodes: { 
+      
+       
+      aut_1: { type: "question", text: "What is the customer's concern?", options: [
+        { label: "Advanced Display v3 (AD v3) displays Website Not Available", next: "aut_2" }
+      
+      ]},
+
+      aut_2: { type: "question", text: 'Please refer to <a href="https://community.se.com/t5/Building-Automation-Knowledge/Advanced-Display-v3-AD-v3-displays-Website-Not-Available/ta-p/450019" target="_blank" rel="noopener noreferrer">Advanced Display v3 (AD v3) displays Website Not Available</a>. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "aut_3" }
+      ]},
+
+      aut_3: {
+          text: "<b>Checked that the USB cable is enabled:</b>",
+          type: "action",
+          steps: [
+        "In WorkStation, in the System Tree pane, select the SmartX server AS-B or SmartX server AS-P.",
+        "Click the Properties tab.",
+        "Click the Network tab.",
+        "Expand Port Settings .",
+        "In the USB port box, select Enable.",
+        "Click Save ."], next: "aut_status" },
+
+
+       aut_status: {
+  type: "question",
+  text: 'Issue resolved?',
+  options: [
+    { label: "Yes", next: "end_fixed" },
+      { label: "No", next: "aut_upgrade" }
+  ]},
+
+  aut_upgrade: {
+  type: "question",
+  text: 'Please perform <a href="https://schneiderelectric.sharepoint.com/sites/DigitalEnergySweden/BMS%20Support/Forms/AllItems.aspx?id=%2Fsites%2FDigitalEnergySweden%2FBMS%20Support%2F1%2E%20EcoStruxure%2F1%2E2%20SpaceLogic%20Serie%2F1%2E2%2E1%20HMI%2FAD%20v3%2FADv3%20RC5%2E3%20uppgradering%2FADv3%20RC5%2E3%20update%201%2Ezip&parent=%2Fsites%2FDigitalEnergySweden%2FBMS%20Support%2F1%2E%20EcoStruxure%2F1%2E2%20SpaceLogic%20Serie%2F1%2E2%2E1%20HMI%2FAD%20v3%2FADv3%20RC5%2E3%20uppgradering" target="_blank" rel="noopener noreferrer">ADv3 RC5.3 update 1</a>. Issue resolved?',
+  options: [
+    { label: "Yes", next: "end_fixed" },
+      { label: "No", next: "aut_usb" }
+  ]},
+
+      aut_usb: { type: "question", text: "could you connect the affected AS-P directly to a PC using the USB Device Administrator connection method and confirm whether the AS-P is detected successfully?", options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "not_detected" }
+      ]}, 
+
+      ev_notdetected: {
+  type: "question",
+  text: 'Kindly perform factory reset: <a href="https://www.se.com/ae/en/faqs/FAQ000234240/" target="_blank" rel="noopener noreferrer">FAQ000234240</a>. Issue resolved?',
+  options: [
+    { label: "Yes", next: "end_fixed" },
+    { label: "No", next: "ev_firmware" }
+  ]},
+
+  ev_firmware: {
+  type: "question",
+  text: 'Please perform <a href="https://schneiderelectric.sharepoint.com/sites/DigitalEnergySweden/BMS%20Support/Forms/AllItems.aspx?id=%2Fsites%2FDigitalEnergySweden%2FBMS%20Support%2F1%2E%20EcoStruxure%2F1%2E2%20SpaceLogic%20Serie%2F1%2E2%2E1%20HMI%2FAD%20v3%2FADv3%20RC5%2E3%20uppgradering%2FADv3%20RC5%2E3%20update%201%2Ezip&parent=%2Fsites%2FDigitalEnergySweden%2FBMS%20Support%2F1%2E%20EcoStruxure%2F1%2E2%20SpaceLogic%20Serie%2F1%2E2%2E1%20HMI%2FAD%20v3%2FADv3%20RC5%2E3%20uppgradering" target="_blank" rel="noopener noreferrer">ADv3 RC5.3 update 1</a>. Issue resolved?',
+  options: [
+    { label: "Yes", next: "end_fixed" },
+      { label: "No", next: "end_escalate" }
+  ]},
+      
+      end_fixed: { type: "end", text: "Issue resolved - Educate the customer" },
+      end_smartslot: { type: "end", text: "Informed customer that issue is related to NMC smart-slot and needs to be replaced. Please proceed accordingly." },
+      end_escalate: { type: "end", text: "Consult with Advanced" }
+    }
+  },
+  
+
+  "Racks and Accessories": {
+    start: "netshelter",
+    nodes: {
+      netshelter: { type: "question", text: "Need help with what Product Line?", options: [
+        { label: "APC NetShelter Rack Containment", next: "redirect_no_display" },
+        { label: "APC NetShelter Aisle Containment", next: "np_action_basic_power" },
+        { label: "APC NetShelter Pod Containment", next: "redirect_no_display" },
+        { label: "APC NetShelter SX Advanced Enclosures", next: "np_action_basic_power" },
+        { label: "APC NetShelter SX Advanced Enclosures", next: "np_action_basic_power" },
+        { label: "Easy Rack", next: "easy_rack" },
+        { label: "Easy Micro Data Center", next: "nd_q2" },
+        { label: "EcoStruxure Micro Data Centers", next: "redirect_no_display" },
+        { label: "APC NetShelter SX Enclosures", next: "netshelter_sx" },
+        { label: "NetShelter Soundproof Racks", next: "redirect_no_display" },
+        { label: "APC NetShelter Specialty Enclosures", next: "np_action_basic_power" },
+        { label: "APC NetShelter Wall-mount Enclosures", next: "np_action_basic_power" },
+        { label: "APC NetShelter Open Frame Racks", next: "redirect_no_display" },
+        { label: "NetShelter CX Enclosures", next: "np_action_basic_power" },
+        { label: "APC NetShelter Ethernet Switches", next: "np_action_basic_power" },
+        { label: "APC NetShelter KVM Switches", next: "redirect_no_display" },
+        { label: "APC NetShelter Rack LCD Consoles", next: "np_action_basic_power" },
+        { label: "APC NetShelter Airflow Management", next: "redirect_no_display" },
+        { label: "APC NetShelter Cable Management", next: "np_action_basic_power" },
+        { label: "APC NetShelter Enclosure Components", next: "redirect_no_display" },
+        { label: "APC NetShelter Shelving & Mounting Accessories", next: "np_action_basic_power" },
+        { label: "Easy Rack Accessories", next: "redirect_no_display" },
+        { label: "Network Connectivity", next: "np_action_basic_power" }
+      ]},
+
+
+      easy_rack: { type: "question", text: "Need help with what SX?", options: [
+        { label: "24U", next: "easy_rack24U" },
+        { label: "42U", next: "easy_rack42U" },
+        { label: "48U", next: "easy_rack48U" }
+      ]},
+
+        easy_rack24U: { type: "question", text: "What is the customer's concern?", options: [
+          { label: "Missing/Damaged Parts or Enclosure/Rack", next: "easy_damaged" },
+          { label: "How-to", next: "nd_action_led_flashing_green" },
+          { label: "Looking for Documentation", next: "nd_action_led_solid_orange" }
+          ]},
+
+          easy_rack42U: { type: "question", text: "What is the customer's concern?", options: [
+          { label: "Missing/Damaged Parts or Enclosure/Rack", next: "easy_damaged" },
+          { label: "How-to", next: "nd_action_led_flashing_green" },
+          { label: "Looking for Documentation", next: "nd_action_led_solid_orange" }
+          ]},
+
+          easy_rack48U: { type: "question", text: "What is the customer's concern?", options: [
+          { label: "Missing/Damaged Parts or Enclosure/Rack", next: "easy_damaged" },
+          { label: "How-to", next: "nd_action_led_flashing_green" },
+          { label: "Looking for Documentation", next: "nd_action_led_solid_orange" }
+          ]},
+
+
+        easy_damaged:{ type: "question", text: "What part/enclosure is missing/damaged?", options: [
+          { label: "Spare Part", next: "damaged_spare_easy" },
+          { label: "Enclosure/Rack", next: "damaged_rack_easy" }
+      ]},
+
+      
+        damaged_spare_easy: {
+          text: "Kindly gather the following:",
+          type: "action",
+          steps: [
+            "Request for images.",
+            "Request for delivery notes.",
+            "Request for images of the packaging."
+          ],
+          next: "easy_damaged_spare"
+        },
+
+
+
+        damaged_rack_easy: {
+          text: "Kindly gather the following:",
+          type: "action",
+          steps: [
+        "Request for images.",
+        "Request for delivery notes.",
+        "Request for images of the packaging"], next: "end_escalate" },
+
+      easy_damaged_spare: { type: "question", text: 'Kindly refer to internal FAQ to determine Spare Part number <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033dbrIAA/view" target="_blank">FAQ000275670</a>', options: [
+          { label: "Spare Part Available", next: "parts_activation" },
+          { label: "Spare Part Not Available", next: "end_escalate" }
+      ]},
+
+
+      
+      netshelter_sx: { type: "question", text: "Need help with what SX?", options: [
+        { label: "12U", next: "sx_question" },
+        { label: "18U", next: "sx_question" },
+        { label: "24U", next: "sx_question" },
+        { label: "42U", next: "sx_question" },
+        { label: "45U", next: "sx_question" },
+        { label: "48U", next: "sx_question" }
+      ]},
+
+      sx_question: { type: "question", text: "What is the customer's concern?", options: [
+          { label: "Pre-sales Inquiry", next: "sx_presales" },
+          { label: "Missing/Damaged Parts or Enclosure/Rack", next: "sx_damaged" },
+          { label: "How-to", next: "nd_action_led_flashing_green" },
+          { label: "Looking for Documentation", next: "nd_action_led_solid_orange" }
+      ]},
+
+      sx_damaged: { type: "question", text: "What part/enclosure is missing/damaged?", options: [
+          { label: "Spare Part", next: "damaged_spare" },
+          { label: "Enclosure/Rack", next: "damaged_rack" }
+      ]},
+
+      damaged_spare: { type: "action",  steps: [
+        "Request for images.",
+        "Request for delivery notes.",
+        "Request for images of the packaging",
+        "Fill up damaged report form (FA377584)"], next: "end_escalate" },
+      
+      damaged_rack: { type: "action",  steps: [
+        "Request for images.",
+        "Request for delivery notes.",
+        "Request for images of the packaging",
+        "Fill up damaged report form (FA377584)"], next: "end_escalate" },
+      
+
+
+      sx_presales: { type: "question", text: "Customer is looking for?", options: [
+          { label: "APC Product Compatibility", next: "nd_action_led_Off" },
+          { label: "3rd-Party Product Compatibility", next: "nd_action_led_solid_green" },
+          { label: "Accessory", next: "sx_spare" }
+      ]},
+
+
+      sx_spare: { type: "action",  steps: [
+        "Refer to the compatibility chart (FA158651)"], next: "sx_spare1" },
+    
+      sx_spare1: { type: "question", text: "Found the compatible Spare/Accessory?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }  
+             ]}, 
+      
+      end_fixed: { type: "end", text: "Issue resolved - Educate the customer" },
+
+      parts_activation: { type: "question", text: "Is Parts Activation Required?", options: [
+          { label: "Yes", next: "parts_activation" },
+          { label: "No", next: "EA_RMA" }
+          ]},     
+      parts_activation1: { type: "action", text: "Please follow Parts Activation Template and proceed with RMA when activated:", steps: [
+        "https://schneiderelectric.sharepoint.com/:w:/r/sites/CaviteHub-Onetech-SecurePower/_layouts/15/Doc.aspx?sourcedoc=%7B2524213E-257C-4879-9B05-4BBD06AC20F3%7D&file=PARTS%20ACTIVATION%20TEMPLATE.docx&action=default&mobileredirect=true"], next: "EA_RMA" }, 
+    
+
+    EA_RMA: { type: "action", text: '<a href="https://schneiderelectric.sharepoint.com/:f:/r/sites/CaviteHub-Onetech-SecurePower/East%20Asia%20Process/RMA%20Email%20Template?csf=1&web=1&e=G5OXzI" target="_blank" rel="noopener noreferrer">FA265129.</a>', steps: [
+    ], next: "EMAIL_TEMPLATE" },
+        
+        
+    EMAIL_TEMPLATE: { type: "action", text: "Please follow EA RMA Email Template:", steps: [
+        "https://schneiderelectric.sharepoint.com/:w:/r/sites/CaviteHub-Onetech-SecurePower/_layouts/15/Doc.aspx?sourcedoc=%7B2ACB869B-D0B0-44DB-A45E-0EBE087C30B7%7D&file=Singapore%20Email%20template%20-%20Updated.docx&action=default&mobileredirect=true"], next: "RMA_WRAP" },   
+
+    RMA_WRAP: { type: "action", steps: [
+        "Make sure to tag the case appropriately"], next: "end_fixed" },
+      end_escalate: { type: "end", text: "Consult with Advanced" }
+    }
+  },
+
+};
+
+// === State ===
+let currentSymptom = null;
+let currentNodeId = null;
+let history = [];
+
+let savedBatterySerial = "N/A";
+let savedBatteryAge = "N/A";
+let savedNmcWorkedNotes = "N/A";
+let savedManualReason = "N/A";
+
+function detectModel(model) {
+
+    model = model.trim().toUpperCase();
+
+    if (
+        model.startsWith("AP96") ||
+        model.startsWith("AP95")
+    ) {
+        return {
+            category: "Data Center Infrastructure Management (DCIM) Software",
+            family: "Network Management Cards",
+            node: "nd_q3"
+        };
+    }
+
+    if (
+        model.startsWith("EVB") ||
+        model.startsWith("EVB1")
+    ) {
+        return {
+            category: "Low Voltage Products and Systems",
+            family: "Electrical Car Charging",
+            node: "ev_q1"
+        };
+    }
+
+    if (
+        model.startsWith("SXWAD") ||
+        model.startsWith("EVB1")
+    ) {
+        return {
+            category: "Building Automation and Control",
+            family: "SpaceLogic™ Advanced Display",
+            node: "aut_1"
+        };
+    }
+
+
+    if (
+        model.startsWith("NB") ||
+        model.startsWith("ITE") ||
+        model.startsWith("ITA") ||
+        model.startsWith("AP94") ||
+        model.startsWith("PCN") ||
+        model.startsWith("PCS") 
+    ) {
+        return {
+            category: "Data Center Infrastructure Management (DCIM) Software",
+            family: "Data Center Infrastructure Management (DCIM) Software",
+            node: "nd_q3"
+        };
+    }
+
+    if (
+        model.startsWith("NB") 
+    ) {
+        return {
+            category: "Data Center Infrastructure Management (DCIM) Software",
+            family: "Netbotz",
+            node: "nd_q3"
+        };
+    }
+
+    if (
+        model.startsWith("AP75") ||
+        model.startsWith("AP78") ||
+        model.startsWith("AP79") ||
+        model.startsWith("AP8") ||
+        model.startsWith("APDU") ||
+        model.startsWith("AP6") ||
+        model.startsWith("AP9")
+    ) {
+        return {
+            category: "IT Power Distribution",
+            family: "Power Distribution Unit",
+            node: "pdu_q2"
+        };
+    }
+
+    if (
+        model.startsWith("AP77") ||
+        model.startsWith("AP44") 
+    ) {
+        return {
+            category: "IT Power Distribution",
+            family: "Automatic Transfer Switch",
+            node: "pdu_q2"
+        };
+    }
+
+     if (
+        model.startsWith("BK") ||
+        model.startsWith("BVX") ||
+        model.startsWith("BX") ||
+        model.startsWith("BR") 
+    ) {
+        return {
+            category: "Uninterruptible Power Supply UPS",
+            family: "Back-UPS",
+            node: "Backups_issue"
+        };
+    }
+
+    if (
+        model.startsWith("SMT") ||
+        model.startsWith("SMX") ||
+        model.startsWith("SMC") ||
+        model.startsWith("SUA") ||
+        model.startsWith("SUM") ||
+        model.startsWith("SMV") ||
+        model.startsWith("SCL")
+    ) {
+        return {
+            category: "Uninterruptible Power Supply UPS",
+            family: "Smart-UPS",
+            node: "Smartups_issue"
+        };
+    }
+
+    if (
+        model.startsWith("SRC") ||
+        model.startsWith("SRT") ||
+        model.startsWith("SRTL") ||
+        model.startsWith("SRV") ||
+        model.startsWith("SRVL") ||
+        model.startsWith("SRVS") ||
+        model.startsWith("SRVSL") ||
+        model.startsWith("SRYL") ||
+        model.startsWith("SURT") ||
+        model.startsWith("SURTA") ||
+        model.startsWith("SURTD")
+    ) {
+        return {
+            category: "Uninterruptible Power Supply UPS",
+            family: "Smart-UPS Online",
+            node: "SmartupsOL_issue"
+        };
+    }
+
+    if (
+      model.startsWith("SYA") ||
+      model.startsWith("SYH") 
+    ) {
+        return {
+            category: "Uninterruptible Power Supply UPS",
+            family: "Symmetra Single Phase",
+            node: "SmartupsOL_issue"
+        };
+    }
+    
+
+    if (
+        model.startsWith("E3S") ||
+        model.startsWith("E3M") ||
+        model.startsWith("E3L") ||
+        model.startsWith("E3SP") ||
+        model.startsWith("E3LP") ||
+        model.startsWith("GVS") ||
+        model.startsWith("GVL") ||
+        model.startsWith("GVX") ||
+        model.startsWith("GVXL") ||
+        model.startsWith("SY") ||
+        model.startsWith("G35") ||
+        model.startsWith("SUVT") 
+
+    ) {
+        return {
+            category: "Uninterruptible Power Supply UPS",
+            family: "Data Center and Facility 3 Phase",
+            node: "SmartupsOL_issue"
+        };
+    }
+
+    if (
+        model.startsWith("AR") ||
+        model.startsWith("ER") 
+       
+    ) {
+        return {
+            category: "Racks and Accessories",
+            family: "Racks and Accessories",
+            node: "sx_question"
+        };
+    }
+
+
+    return null;
+}
+
+
+
+function autoDetectModel() {
+
+    const model =
+        document.getElementById("modelInput").value.trim();
+        
+
+    const result = detectModel(model);
+
+    if (!result) {
+        document.getElementById("detectedFamily").innerHTML =
+            "Product Family: Not Found";
+        return;
+    }
+
+    document.getElementById("detectedFamily").innerHTML =
+        "Product Family: " + result.family;
+
+    currentSymptom = result.category;
+
+    const dynamicFields = document.getElementById("dynamicFields");
+
+if (result.category === "Uninterruptible Power Supply UPS") {
+    dynamicFields.innerHTML = `
+        <input id="batterySerialInput"
+               class="select"
+               placeholder="Battery Serial Number">
+
+        <div id="batteryAgeResult" class="step">
+            Battery Age: Not Calculated
+        </div>
+
+        <input id="upsFirmware" class="select" placeholder="UPS Firmware">
+        <input id="upsLoads" class="select" placeholder="UPS Load Model">
+        <input id="nmcUsage" class="select" placeholder="Using NMC or Software">
+    `;
+}
+ else if (result.category === "Data Center Infrastructure Management (DCIM) Software") {
+    dynamicFields.innerHTML = `
+        <input id="nmcFirmware" class="select" placeholder="NMC Firmware">
+        <input id="SoftwareVersion" class="select" placeholder="Software Version">
+        <input id="OSVersion" class="select" placeholder="OS Version">
+        <input id="logAttached" class="select" placeholder="Log Attached">
+    `;
+
+    } else if (result.category === "IT Power Distribution") {
+    dynamicFields.innerHTML = `
+        <input id="nmcFirmware" class="select" placeholder="Device Firmware">
+        <input id="source" class="select" placeholder="Input Source">
+        <input id="logAttached" class="select" placeholder="Log Attached">
+    `;
+
+     } else if (result.category === "Building Automation and Control") {
+    dynamicFields.innerHTML = `
+        <input id="aspversion" class="select" placeholder="ASP version">
+        <input id="source" class="select" placeholder="EBO version">
+        <input id="logAttached" class="select" placeholder="Trace Log">
+    `;
+
+} else {
+    dynamicFields.innerHTML = "";
+}
+
+    history = [{
+        symptom: result.category,
+        nodeId: result.node,
+        label: result.family
+    }];
+
+    renderNode(result.node);
+}
+
+document.getElementById("modelGoBtn")
+    .addEventListener("click", autoDetectModel);
+
+function calculateBatteryAge(serial) {
+  if (!serial) return null;
+
+  serial = serial.trim().toUpperCase();
+
+  // Example: 7A2134101920
+  const match = serial.match(/^.{2}(\d{2})(\d{2})/);
+
+  if (!match) return null;
+
+  const year = 2000 + parseInt(match[1], 10);
+  const week = parseInt(match[2], 10);
+
+  if (week < 1 || week > 53) return null;
+
+  const manufactureDate = new Date(year, 0, 1);
+  manufactureDate.setDate(
+    manufactureDate.getDate() + ((week - 1) * 7)
+  );
+
+  const today = new Date();
+
+  const ageYears =
+    (today - manufactureDate) /
+    (1000 * 60 * 60 * 24 * 365.25);
+
+  return ageYears;
+}
+
+
+document.addEventListener("input", function (e) {
+    if (e.target.id !== "batterySerialInput") return;
+
+    const serial = e.target.value.trim();
+    savedBatterySerial = serial;
+
+    const result =
+        document.getElementById("batteryAgeResult");
+
+    const age = calculateBatteryAge(serial);
+
+    if (age === null) {
+        result.innerHTML =
+            '<span style="color:#dc2626;font-weight:bold;">Battery Age: Invalid Serial</span>';
+        savedBatteryAge = "Invalid";
+        return;
+    }
+
+    savedBatteryAge = age.toFixed(1);
+
+    const cls = age >= 3 ? "batt-old" : "batt-good";
+
+result.innerHTML =
+  `<strong>Battery Age:</strong>
+   <span class="${cls}">
+      ${savedBatteryAge} Years
+   </span>`;
+});
+
+
+// Populate symptom select
+
+
+const dynamicFields = document.getElementById('dynamicFields');
+
+
+
+
+
+const modelInput =
+  document.getElementById("modelInput");
+
+let detectTimer;
+
+modelInput.addEventListener("input", () => {
+
+  clearTimeout(detectTimer);
+
+  detectTimer = setTimeout(() => {
+    autoDetectModel();
+  }, 500);
+
+});
+
+
+
+
+function startSymptom(symptom){
+  if(!symptom) return;
+  currentSymptom = symptom;
+  const start = decisionTree[symptom].start;
+  history = [{symptom, nodeId:start, label:`Start: ${symptom}`}];
+  renderNode(start);
+  
+}
+
+function getBatteryDecision() {
+
+  const serial =
+    document.getElementById("batterySerialInput")?.value.trim();
+
+  const age = calculateBatteryAge(serial);
+
+  if (age === null) return "newbatt_action";
+
+  return age >= 3
+    ? "oldbatt_action"
+    : "newbatt_action";
+}
+
+
+function renderNode(nodeId){
+  currentNodeId = nodeId;
+
+  const nodeView = document.getElementById('nodeView');
+  nodeView.innerHTML = '';
+  const node = decisionTree[currentSymptom].nodes[nodeId];
+  const title = document.createElement('div');
+  title.className = 'question';
+  title.innerHTML = node.text;
+  nodeView.appendChild(title);
+
+  if(node.type === 'question'){
+    const opts = document.createElement('div');
+    opts.className = 'options';
+    node.options.forEach(o => {
+      const b = document.createElement('button');
+      b.className = 'btn accent';
+      b.textContent = o.label;
+      b.addEventListener('click', () => {
+
+  // ✅ AUTO FLOW for battery age
+  if (nodeId === "batteryage") {
+
+  const wrapper = document.createElement('div');
+  wrapper.style.marginTop = "10px";
+
+  const input = document.createElement('input');
+  input.type = "text";
+  input.id = "batterySerial";
+  input.className = "select";
+  input.placeholder = "Enter Battery Serial Number";
+
+  const result = document.createElement('div');
+  result.id = "batteryAgeResult";
+  result.className = "step";
+  result.style.marginTop = "10px";
+  result.innerHTML = "Battery age not calculated.";
+
+  const calcBtn = document.createElement('button');
+  calcBtn.className = "btn";
+  calcBtn.textContent = "Calculate Battery Age";
+
+  calcBtn.addEventListener('click', () => {
+
+    const serial = input.value.trim();
+
+
+    
+
+    if (!serial) {
+      alert("Enter battery serial number.");
+      return;
+    }
+
+    const age = calculateBatteryAge(serial);
+
+    if (age === null) {
+      result.innerHTML = "Invalid serial number format.";
+      return;
+    }
+
+    savedBatterySerial = serial;
+
+    result.innerHTML =
+      `<strong>Calculated Battery Age:</strong> ${age.toFixed(1)} Years`;
+  });
+
+  wrapper.appendChild(input);
+  wrapper.appendChild(calcBtn);
+  wrapper.appendChild(result);
+
+  nodeView.appendChild(wrapper);
+}
+
+  // ✅ Normal flow for all other nodes
+  selectOption(o);
+});
+  
+
+      opts.appendChild(b);
+    });
+    nodeView.appendChild(opts);
+
+  }
+
+    
+
+
+if (nodeId === "batteryage") {
+
+  const serial =
+    document.getElementById("batterySerial")?.value.trim();
+
+  
+  savedBatterySerial = serial;
+
+  const age = calculateBatteryAge(serial);
+
+  if (age !== null) {
+
+    history.push({
+      symptom: currentSymptom,
+      nodeId: currentNodeId,
+      label: `Calculated Age: ${age.toFixed(1)} Years`
+    });
+
+  }
+}
+
+
+else if(node.type === 'text') {
+
+    const input = document.createElement('textarea');
+    input.className = 'select';
+    input.rows = 4;
+    input.id = 'manualReason';
+    input.placeholder =
+        'Enter reason why Battery Calibration cannot be performed';
+
+    nodeView.appendChild(input);
+
+    const nextRow = document.createElement('div');
+    nextRow.className = 'toolbar';
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn';
+    nextBtn.textContent = 'Next ▶';
+
+    nextBtn.addEventListener('click', () => {
+
+        window.savedManualReason =
+            document.getElementById('manualReason')?.value || 'N/A';
+
+        savedManualReason = input.value || "N/A";
+
+        goto(node.next);
+
+    });
+
+    nextRow.appendChild(nextBtn);
+    nodeView.appendChild(nextRow);
+}
+  
+    else if(node.type === 'action'){
+  const list = document.createElement('div');
+
+  
+node.steps.forEach((s, index) => {
+
+  const row = document.createElement('div');
+  row.className = 'step';
+ row.style.display = "flex";
+row.style.flexDirection = "column";
+row.style.alignItems = "center";
+row.style.justifyContent = "center";
+  row.style.gap = "10px";
+
+  const label = document.createElement('div');
+  label.textContent = `${index + 1}. ${s}`;
+  label.style.width = "100%";
+label.style.textAlign = "center";
+label.style.whiteSpace = "normal";
+
+
+  row.appendChild(label);
+
+  
+if (currentNodeId === "nmcworked" && index === 0) {
+  const input = document.createElement('textarea');
+  input.id = "nmcWorkedNotes";
+  input.className = "select";
+  input.rows = 4;
+  input.placeholder = "Enter notes here...";
+  input.style.flex = "1";
+
+  row.appendChild(input);
+}
+
+
+  // ✅ Add textbox for specific questions
+  if (currentNodeId === "no_power_working") {
+
+    let input;
+
+    if (index === 3) {
+      // ✅ textarea for troubleshooting steps
+      input = document.createElement('textarea');
+      input.rows = 2;
+    } else {
+      input = document.createElement('input');
+      input.type = "text";
+    }
+
+    input.className = "select";
+    input.style.flex = "1";
+
+    // ✅ Unique IDs per question
+    const ids = [
+      "np_issueStart",
+      "np_recentChanges",
+      "np_priorErrors",
+      "np_stepsDone"
+    ];
+
+    input.id = ids[index];
+
+    row.appendChild(input);
+  }
+
+  list.appendChild(row);
+});
+
+
+  nodeView.appendChild(list);
+
+  // ✅ ADD TEXTBOXES ONLY FOR no_power_working
+  if (currentNodeId === "no_power_working") {
+
+    const formContainer = document.createElement('div');
+    formContainer.style.display = "flex";
+    formContainer.style.flexDirection = "column";
+    formContainer.style.gap = "8px";
+    formContainer.style.marginTop = "10px";
+
+   
+
+    nodeView.appendChild(formContainer);
+  }
+
+  // ✅ Next button
+  const nextRow = document.createElement('div');
+  nextRow.className = 'toolbar';
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'btn';
+  nextBtn.textContent = 'Next ▶';
+
+  nextBtn.addEventListener('click', () => {
+
+    
+if (currentNodeId === "nmcworked") {
+  savedNmcWorkedNotes =
+    document.getElementById("nmcWorkedNotes")?.value || "N/A";
+}
+
+
+  // ✅ SAVE VALUES when leaving no_power_working
+  if (currentNodeId === "no_power_working") {
+    savedNoPowerWorking.issueStart =
+      document.getElementById("np_issueStart")?.value || "N/A";
+
+    savedNoPowerWorking.recentChanges =
+      document.getElementById("np_recentChanges")?.value || "N/A";
+
+    savedNoPowerWorking.priorErrors =
+      document.getElementById("np_priorErrors")?.value || "N/A";
+
+    savedNoPowerWorking.stepsDone =
+      document.getElementById("np_stepsDone")?.value || "N/A";
+  }
+
+  goto(node.next);
+});
+
+  nextRow.appendChild(nextBtn);
+  nodeView.appendChild(nextRow);
+}
+
+  else if(node.type === 'end'){
+    const badge = document.createElement('div');
+    badge.className = 'tag action';
+    badge.textContent = node.text;
+    nodeView.appendChild(badge);
+    const row = document.createElement('div');
+    row.className = 'toolbar';
+    const restart = document.createElement('button');
+    restart.className = 'btn warn';
+    restart.textContent = 'Start another symptom ⟲';
+    
+restart.addEventListener('click', () => {
+  
+  dynamicFields.innerHTML = '';
+  document.getElementById('nodeView').innerHTML = '';
+
+  const pathEl = document.getElementById('path');
+if (pathEl) {
+  pathEl.innerHTML = '';
+}
+});
+
+    row.appendChild(restart);
+    nodeView.appendChild(row);
+  }
+}
+
+function selectOption(o){
+  // Handle redirect to another tree
+  if(o.next && o.next.startsWith('goto_')){
+  const target = o.next.replace('goto_', '');
+
+  if (typeof symptomSelect !== 'undefined' && symptomSelect) {
+    symptomSelect.value = target;
+  }
+
+  startSymptom(target);
+  return;
+}
+  history.push({symptom: currentSymptom, nodeId: o.next, label: o.label});
+  goto(o.next);
+}
+
+function goto(nodeId){
+
+  if (nodeId === "batteryage_auto") {
+    nodeId = getBatteryDecision();
+  }
+
+  renderNode(nodeId);
+  
+}
+
+function renderPath(){
+  const pathEl = document.getElementById('path');
+
+  if (!pathEl) {
+    return;
+  }
+
+  pathEl.innerHTML = '';
+
+  history.forEach((h, idx) => {
+
+    const li = document.createElement('li');
+    li.textContent = `${idx === 0 ? 'Start' : 'Step'}: ${
+      decisionTree[h.symptom].nodes[h.nodeId].text
+    }`;
+
+    li.className = (h.nodeId === currentNodeId) ? 'current' : '';
+
+    const tag = document.createElement('span');
+    tag.className = 'tag symptom';
+    tag.textContent = h.symptom;
+
+    li.appendChild(tag);
+    pathEl.appendChild(li);
+
+  });
+}
+
+
+
+// Controls
+const backBtn = document.getElementById('backBtn');
+if (backBtn) {
+  backBtn.addEventListener('click', () => {
+    if(history.length <= 1) return;
+    history.pop();
+    const prev = history[history.length-1];
+    renderNode(prev.nodeId);
+   
+  });
+}
+
+const restartBtn = document.getElementById('restartBtn');
+if (restartBtn) {
+  restartBtn.addEventListener('click', () => {
+    if(!currentSymptom) return;
+    startSymptom(currentSymptom);
+  });
+}
+const printBtn = document.getElementById('printBtn');
+if (printBtn) {
+  printBtn.addEventListener('click', () => window.print());
+}
+
+
+
+const exportBtn = document.getElementById('exportBtn');
+const lines = [];
+function getFullPathFrom(startNodeId) {
+    const nodes = [];
+    let current = startNodeId;
+
+    while (current) {
+        const node = decisionTree[currentSymptom].nodes[current];
+        if (!node) break;
+
+        nodes.push({ nodeId: current, node });
+
+        if (node.type === "action") {
+            current = node.next;
+        } else {
+            break;
+        }
+    }
+
+    return nodes;
+}
+
+
+function stripHtml(html) {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+}
+
+exportBtn.addEventListener('click', () => {
+  const lines = [];
+  const model = document.getElementById('modelInput').value || "N/A";
+  const serial = document.getElementById('serialInput').value || "N/A";
+  const caseNumber = document.getElementById('caseNumber').value || "N/A";
+  const engineerName = document.getElementById('engineerName').value || "N/A";
+  const mainConcern = document.getElementById("mainConcern")?.value || "N/A";
+
+
+  
+const now = new Date();
+const pcDate = now.toLocaleDateString();
+const pcTime = now.toLocaleTimeString();
+const pcDateTime = now.toLocaleString();
+
+
+  // UPS fields
+  const upsFirmware = document.getElementById('upsFirmware')?.value || "N/A";
+  const upsLoad = document.getElementById('upsLoads')?.value || "N/A";
+  const nmcUsage = document.getElementById('nmcUsage')?.value || "N/A";
+
+  // DCIM fields
+  const nmcFirmware = document.getElementById('nmcFirmware')?.value || "N/A";
+  const softwareVersion = document.getElementById('SoftwareVersion')?.value || "N/A";
+  const osVersion = document.getElementById('OSVersion')?.value || "N/A";
+  const source = document.getElementById('InputSource')?.value || "N/A";
+  const logAttached = document.getElementById('logAttached')?.value || "N/A";
+
+  const batterySerial = document.getElementById("batterySerialInput")?.value || "N/A";
+  
+const np_issueStart = savedNoPowerWorking.issueStart;
+const np_recentChanges = savedNoPowerWorking.recentChanges;
+const np_priorErrors = savedNoPowerWorking.priorErrors;
+const np_stepsDone = savedNoPowerWorking.stepsDone;
+
+
+const exportDateTime =
+  new Date().toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+
+lines.push("=== Case Details ===");
+lines.push(`Timestamp: ${exportDateTime}`);
+lines.push(`Case Number: ${caseNumber}`);
+lines.push(`Region: ${selectedRegion}`);
+lines.push(`Engineer Name: ${engineerName}`);
+lines.push(`Main Concern: ${mainConcern}`);
+lines.push(`Model: ${model}`);
+lines.push(`Serial Number: ${serial}`);
+lines.push("");
+
+lines.push("=== Dynamic Details ===");
+
+const dynamicFields = [
+    "batterySerialInput",
+    "upsFirmware",
+    "upsLoads",
+    "nmcUsage",
+    "nmcFirmware",
+    "SoftwareVersion",
+    "OSVersion",
+    "logAttached",
+    "source",
+    "aspversion"
+];
+
+dynamicFields.forEach(id => {
+    const field = document.getElementById(id);
+
+    if (field && field.value.trim()) {
+        lines.push(
+            `${field.placeholder}: ${field.value.trim()}`
+        );
+    }
+});
+
+if (
+    savedBatteryAge &&
+    savedBatteryAge !== "N/A" &&
+    savedBatteryAge !== "Invalid"
+) {
+    lines.push(`Battery Age: ${savedBatteryAge} Years`);
+}
+
+lines.push("");
+
+
+
+
+
+lines.push("=== Decision Path ===");
+
+  let stepCounter = 1;
+  for (let i = 0; i < history.length; i++) {
+    const h = history[i];
+    const node = decisionTree[h.symptom].nodes[h.nodeId];
+
+    if (node.type === "question" && i + 1 < history.length) {
+      const next = history[i + 1];
+      if (next.label && next.label !== "Next") {
+        lines.push(`${stepCounter++}. ${stripHtml(node.text)}`);
+        lines.push(`   → ${next.label}`);
+        lines.push("");
+      }renderPath();
+    }
+
+ if (node.type === "action") {
+  lines.push(`${stepCounter++}. ${stripHtml(node.text)}`);
+
+  if (node.steps) {
+    node.steps.forEach((step, idx) => {
+      
+      // ✅ Attach answers for no_power_working
+      if (h.nodeId === "no_power_working") {
+        const answers = [
+          savedNoPowerWorking.issueStart,
+          savedNoPowerWorking.recentChanges,
+          savedNoPowerWorking.priorErrors,
+          savedNoPowerWorking.stepsDone
+        ];
+
+        lines.push(`   ${step}`);
+        lines.push(`     ➤ Answer: ${answers[idx] || "N/A"}`);
+      } else {
+        lines.push(`   ✔ ${step}`);
+      }
+    });
+  }
+
+  lines.push("");
+}
+
+    if (node.type === "end") {
+  lines.push("");
+  lines.push(`Result: ${node.text}`);
+}
+  }
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'troubleshooting_summary.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+let selectedRegion = "";
+
+document.querySelectorAll(".region-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        selectedRegion = btn.textContent.trim();
+
+        document.getElementById("regionInput").value = selectedRegion;
+
+        document.getElementById("regionPage").style.display = "none";
+        document.getElementById("appContent").style.display = "block";
+    });
+});
+
+
+document.body.addEventListener("dblclick", function() {
+    alert(
+        "🎉 Credits to the following:\n\n" +
+        "Jon Profeta\n" +
+        "Sherie Paredes\n" +
+        "Mc Rutaquio\n" +
+        "Mico Oliveros\n" +
+        "Gen Boni"
+    );
+});
+
+
+</script>
+</body>
+<footer>
+    <p>
+        Found a bug or have feedback?
+        <a href="mailto:AllenClyde.Gadayan@se.com?subject=Feedback or Issue Report">
+            Contact Support
+        </a>
+    </p>
+</footer>
+</html>
