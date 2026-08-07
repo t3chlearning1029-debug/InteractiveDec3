@@ -274,15 +274,6 @@ width: 100%;
 }
 
 </style>
-
-  <script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "xygwje8jvs");
-</script>
-  
 </head>
 <body>
   
@@ -338,7 +329,14 @@ width: 100%;
                placeholder="Engineer Name">
 
         <input id="mainConcern" class="select"
-               placeholder="Main Concern">
+                     placeholder="Main Concern">
+
+        <input
+    id="globalNotes"
+    class="select"
+    rows="4"
+    placeholder="Additional Notes">
+    </input>
 
         <div class="model-row">
     <input id="modelInput"
@@ -427,6 +425,90 @@ const decisionTree = {
         { label: "Symmetra LX/RM", next: "ups_issue" },
         { label: "Special Procedure", next: "special_procedure" }
       ]},
+
+
+    Smartups_issue: { type: "question", text: "What is the concern?", options: [
+        { label: "Potential Safety Incident", next: "ups_issue_psi" },
+        { label: "Fault active", next: "ups_fault" },
+        { label: "Sizing UPS", next: "sizing" }
+        ]},
+
+
+    ups_fault:   { type: "question", text: "What is the concern?", options: [
+        { label: "At least one faulty battery exists.", next: "rbl_on" },
+        { label: "Fault active", next: "ups_fault" },
+        { label: "Sizing UPS", next: "sizing" }
+        ]},
+
+    rbl_on: { type: "question", text: "Does the UPS support External Battery Packs?", options: [
+        { label: "Yes", next: "bp_yes" },
+        { label: "No", next: "bp_no" }
+        
+        ]},
+
+    bp_yes: { type: "question", text: "Kindly identify age of all RBCs",
+        next: "batt_replaced"},
+
+
+    bp_no: { type: "question", text: "Is the battery replaced before?", options: [
+        { label: "Yes", next: "batt_replaced" },
+        { label: "No", next: "batt_replaced" }
+        ]},
+
+ 
+
+    batt_replaced: { type: "question", text: 'Based on the RBC Serial number, how old is the battery? ', options: [
+        { label: "New", next: "batt_new" },
+        { label: "3 years and up", next: "batt_warranty" }
+        ]},
+
+        
+    batt_new: { type: "question", text: 'Kindly refer to <a href="https://www.se.com/us/en/faqs/FA156584/" target="_blank" rel="noopener noreferrer">FA156584.</a>. Issue Resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "batt_warranty" }
+        ]},
+
+    batt_old: {
+  type: "action",
+  text: "Battery is aged",
+  steps: [
+    "Battery may be degraded",
+    "Recommend battery replacement",  ],
+  next: "batt_nowarranty"
+},
+
+
+batt_nowarranty: {
+  type: "action",
+  text: "Battery is aged",
+  steps: [
+    "Battery may be degraded",
+    "Recommend battery replacement",  ],
+  next: "end_notfixed"
+},
+
+batt_warranty: { type: "question", text: 'Is the battery covered by active warranty?', options: [
+        { label: "Yes", next: "RMA_ROUTER" },
+        { label: "No", next: "batt_nowarranty" }
+        ]},
+    
+  
+    
+      
+
+    EA_RMA: { type: "action", text: 'Please follow <a href="https://schneiderelectric.sharepoint.com/:p:/r/sites/CaviteHub-Onetech-SecurePower/East%20Asia%20Process/Processes/East%20Asia%20RMA%20Process%20-%20Copy%202026.pptx?d=wbc893365312d41fb8558c712de0ea41c&csf=1&web=1&e=x3eDHr" target="_blank" rel="noopener noreferrer">RMA</a> Process.', steps: [
+    ], next: "EMAIL_TEMPLATE" },
+        
+        
+    EMAIL_TEMPLATE: { type: "action", text: 'Please follow EA <a href="https://schneiderelectric.sharepoint.com/:w:/r/sites/CaviteHub-Onetech-SecurePower/_layouts/15/Doc.aspx?sourcedoc=%7B2ACB869B-D0B0-44DB-A45E-0EBE087C30B7%7D&file=Singapore%20Email%20template%20-%20Updated.docx&action=default&mobileredirect=true" target="_blank" rel="noopener noreferrer">RMA Template</a>.', steps: [
+        ], next: "end_notfixed" },   
+
+  
+    
+      end_fixed: { type: "end", text: "Issue resolved - Educate the customer" },
+      end_notfixed: { type: "end", text: "Set Proper Expectation." },
+      end_escalate: { type: "end", text: "Consult with Advanced" },
+
 
 
     
@@ -546,7 +628,7 @@ oldbatt_action: {
 
     rtime1: {type: "question", text: "What is the Battery Age?", options: [
         { label: "New", next: "newruntime" },
-        { label: "2 Years and up", next: "oldbatt_action" }
+        { label: "3 Years and up", next: "oldbatt_action" }
         ]
     },
 
@@ -617,21 +699,35 @@ oldbatt_action: {
 
     backups_alarm: {type: "question", text: 'Please take note of the Visual and Audible Alarm present and refer to UPS User Guide for the list. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA158827/" target="_blank">FA158827</a> ', options: [
         { label: "Available on the User Guide", next: "alarm1" },
+        { label: "F0 error", next: "alarm4" },
+        { label: "F0 error", next: "alarm4" },
         { label: "Not available on the User Guide", next: "alarm2" }
+
         ]
     },
+    
+    alarm4: {type: "question", text: 'Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QxwDIAS/view" target="_blank">FA159981</a>. Issue Resolved? ', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "BN1500M2, BN1350M2, BX1500M", next: "alarm3" },
+        { label: "No", next: "RMA_ROUTER" }
+        ]},
+
+    alarm3: {type: "question", text: 'Kindly follow <a href="http://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyoIIAS/view" target="_blank">FAQ000273813</a>. Issue Resolved? ', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "RMA_ROUTER" }
+        ]},
 
       
     alarm1: {type: "question", text: "Please follow the recommended action on the user guide. Is issue resolved?", options: [
         { label: "Yes", next: "end_fixed" },
-        { label: "RMA Needed", next: "EA_RMA" },
+        { label: "RMA Needed", next: "RMA_ROUTER" },
         { label: "No", next: "alarm2" }
         ]      
     },
 
     alarm2: {type: "question", text: 'Kindly follow <a href="https://www.se.com/ph/en/faqs/FA158947/" target="_blank">FA158947</a>. Is issue resolved?', options: [
         { label: "Yes", next: "end_fixed" },
-        { label: "No", next: "EA_RMA" }
+        { label: "No", next: "RMA_ROUTER" }
         ]  
   },
    
@@ -659,7 +755,7 @@ oldbatt_action: {
 
     srt_fault3: { type: "question", text: "Issue Resolved? ", options: [
         { label: "Yes", next: "end_fixed" },
-        { label: "RMA Needed", next: "EA_RMA" },
+        { label: "RMA Needed", next: "RMA_ROUTER" },
         { label: "No", next: "end_escalate" }
     ]},
 
@@ -721,7 +817,7 @@ no_power_install3: { type: "question", text: 'The Circuit Breaker tripped, try t
 
       no_power_install4: { type: "question", text: "Is Parts Activation Required?", options: [
           { label: "Yes", next: "parts_activation" },
-          { label: "No", next: "EA_RMA" }
+          { label: "No", next: "RMA_ROUTER" }
           ]},     
 
            
@@ -1390,10 +1486,10 @@ no_power_install3: { type: "question", text: 'The Circuit Breaker tripped, try t
 
       parts_activation: { type: "question", text: "Is Parts Activation Required?", options: [
           { label: "Yes", next: "parts_activation" },
-          { label: "No", next: "EA_RMA" }
+          { label: "No", next: "RMA_ROUTER" }
           ]},     
       parts_activation1: { type: "action", text: "Please follow Parts Activation Template and proceed with RMA when activated:", steps: [
-        "https://schneiderelectric.sharepoint.com/:w:/r/sites/CaviteHub-Onetech-SecurePower/_layouts/15/Doc.aspx?sourcedoc=%7B2524213E-257C-4879-9B05-4BBD06AC20F3%7D&file=PARTS%20ACTIVATION%20TEMPLATE.docx&action=default&mobileredirect=true"], next: "EA_RMA" }, 
+        "https://schneiderelectric.sharepoint.com/:w:/r/sites/CaviteHub-Onetech-SecurePower/_layouts/15/Doc.aspx?sourcedoc=%7B2524213E-257C-4879-9B05-4BBD06AC20F3%7D&file=PARTS%20ACTIVATION%20TEMPLATE.docx&action=default&mobileredirect=true"], next: "RMA_ROUTER" }, 
     
 
     EA_RMA: { type: "action", text: '<a href="https://schneiderelectric.sharepoint.com/:f:/r/sites/CaviteHub-Onetech-SecurePower/East%20Asia%20Process/RMA%20Email%20Template?csf=1&web=1&e=G5OXzI" target="_blank" rel="noopener noreferrer">FA265129.</a>', steps: [
@@ -1513,6 +1609,8 @@ function detectModel(model) {
 
      if (
         model.startsWith("BK") ||
+        model.startsWith("BN") ||
+        model.startsWith("BE") ||
         model.startsWith("BVX") ||
         model.startsWith("BX") ||
         model.startsWith("BR") 
@@ -1635,6 +1733,13 @@ function autoDetectModel() {
 
 if (result.category === "Uninterruptible Power Supply UPS") {
     dynamicFields.innerHTML = `
+        <input id="batterypackmodel"
+               class="select"
+               placeholder="Battery Pack Model Number">
+        <input id="batterypackserial"
+               class="select"
+               placeholder="Battery Pack Serial Number">
+
         <input id="batterySerialInput"
                class="select"
                placeholder="Battery Serial Number">
@@ -2065,32 +2170,70 @@ if (currentNodeId === "nmcworked") {
   nodeView.appendChild(nextRow);
 }
 
-  else if(node.type === 'end'){
+  else if(node.type === 'end') {
+
     const badge = document.createElement('div');
     badge.className = 'tag action';
     badge.textContent = node.text;
     nodeView.appendChild(badge);
+
+    const caseNumber =
+        document.getElementById("caseNumber")?.value || "";
+
+    const engineerName =
+        document.getElementById("engineerName")?.value || "";
+
+    const model =
+        document.getElementById("modelInput")?.value || "";
+
+    const formUrl =
+    "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=reFRbkvFOUu1mA_-muaP7-8rXJK6HMpHkRmAOtvZvNpURDhaUUZaTzNEVlZXSTQ1MFM5WDJGUFlTUC4u" +
+    "&r691b4c34256c4e62a6ddc2de7529cb5b=" + encodeURIComponent(caseNumber) +
+    "&rfa42c6e9fe294fdf901d6ff6d19a4a54=" + encodeURIComponent(model) +
+    "&r2d89d8c52b1d4f71854742360f9644bf=" + encodeURIComponent(selectedRegion) +
+        "&r48ae813913824667acd5193e7ad6e2dd=" + encodeURIComponent(node.text);
+
     const row = document.createElement('div');
     row.className = 'toolbar';
+
     const restart = document.createElement('button');
     restart.className = 'btn warn';
     restart.textContent = 'Start another symptom ⟲';
-    
-restart.addEventListener('click', () => {
-  
-  dynamicFields.innerHTML = '';
-  document.getElementById('nodeView').innerHTML = '';
-
-  const pathEl = document.getElementById('path');
-if (pathEl) {
-  pathEl.innerHTML = '';
-}
-});
 
     row.appendChild(restart);
+
+    // SURVEY BUTTON
+    const surveyBtn = document.createElement("a");
+    surveyBtn.href = formUrl;
+    surveyBtn.target = "_blank";
+    surveyBtn.className = "btn accent";
+    surveyBtn.textContent = "📝 Complete Survey";
+
+    row.appendChild(surveyBtn);
+
     nodeView.appendChild(row);
-  }
 }
+
+    // Display survey
+    const surveyDiv = document.createElement('div');
+    surveyDiv.style.marginTop = '20px';
+
+    surveyDiv.innerHTML = `
+    <h3>Quick Feedback</h3>
+    <iframe
+        src="${formUrl}"
+        width="100%"
+        height="600"
+        frameborder="0"
+        style="border:none;max-width:100%;">
+    </iframe>
+`;
+
+    nodeView.appendChild(surveyDiv);
+}
+
+
+
 
 function selectOption(o){
   // Handle redirect to another tree
@@ -2196,6 +2339,39 @@ function getFullPathFrom(startNodeId) {
     return nodes;
 }
 
+function goto(nodeId){
+
+    if(nodeId === "RMA_ROUTER"){
+
+        switch(selectedRegion){
+
+            case "Asia Pacific":
+                nodeId = "EA_RMA";
+                break;
+
+            case "North America":
+                nodeId = "NA_RMA";
+                break;
+
+            case "Europe":
+                nodeId = "EU_RMA";
+                break;
+
+            case "Latin America":
+                nodeId = "LATAM_RMA";
+                break;
+
+            case "Middle East and Africa":
+                nodeId = "MEA_RMA";
+                break;
+
+            default:
+                nodeId = "end_escalate";
+        }
+    }
+
+    renderNode(nodeId);
+}
 
 function stripHtml(html) {
   const div = document.createElement("div");
@@ -2210,6 +2386,8 @@ exportBtn.addEventListener('click', () => {
   const caseNumber = document.getElementById('caseNumber').value || "N/A";
   const engineerName = document.getElementById('engineerName').value || "N/A";
   const mainConcern = document.getElementById("mainConcern")?.value || "N/A";
+  const globalNotes =
+    document.getElementById('globalNotes')?.value || "N/A";
 
 
   
@@ -2256,14 +2434,19 @@ lines.push(`Case Number: ${caseNumber}`);
 lines.push(`Region: ${selectedRegion}`);
 lines.push(`Engineer Name: ${engineerName}`);
 lines.push(`Main Concern: ${mainConcern}`);
+
 lines.push(`Model: ${model}`);
 lines.push(`Serial Number: ${serial}`);
+lines.push("=== Additional Notes ===");
+lines.push(globalNotes);
 lines.push("");
 
 lines.push("=== Dynamic Details ===");
 
 const dynamicFields = [
     "batterySerialInput",
+    "batterypackmodel",
+    "batterypackserial",
     "upsFirmware",
     "upsLoads",
     "nmcUsage",
@@ -2293,7 +2476,7 @@ if (
     lines.push(`Battery Age: ${savedBatteryAge} Years`);
 }
 
-lines.push("");
+
 
 
 
@@ -2338,7 +2521,7 @@ lines.push("=== Decision Path ===");
     });
   }
 
-  lines.push("");
+  
 }
 
     if (node.type === "end") {
