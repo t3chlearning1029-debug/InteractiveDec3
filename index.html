@@ -215,9 +215,56 @@ width: 100%;
 
 .layout {
     display: grid;
-    grid-template-columns: 1fr 2fr; /* 33% / 67% */
+    grid-template-columns: minmax(280px, 350px) 1fr;
     gap: 20px;
     align-items: start;
+    width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .top-navbar {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 10px;
+    }
+
+    .nav-btn {
+        flex: 1 1 120px;
+    }
+
+    .region-btn {
+        width: 90%;
+        max-width: 350px;
+    }
+
+    .left-column,
+    .right-column {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .select,
+    input,
+    textarea {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #nodeView .options {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #nodeView .options .btn {
+        width: 100%;
+    }
 }
 
 .left-column {
@@ -232,7 +279,8 @@ width: 100%;
     border: 1px solid var(--se-border);
     border-radius: 8px;
     padding: 16px;
-    min-height: 70vh;
+    min-height: auto;
+    width: 100%;
 }
 
 #nodeView{
@@ -429,16 +477,1571 @@ const decisionTree = {
 
     Smartups_issue: { type: "question", text: "What is the concern?", options: [
         { label: "Potential Safety Incident", next: "ups_issue_psi" },
+        { label: "Will not turn on", next: "su_no_power" },
         { label: "Fault active", next: "ups_fault" },
+        { label: "Smartconnect Concern", next: "sc_issues" },
         { label: "Sizing UPS", next: "sizing" }
         ]},
+
+    
+    su_no_power: { type: "question", text: "When did they notice the concern?", options: [
+        { label: "Upon Install", next: "su_no_power_install" },
+        { label: "It has been working.", next: "su_no_power_working" }
+
+        ]},
+
+    su_no_power_working: { type: "action", text: "Kindly gather the following information:", steps: [
+        "When did the issue started? ",
+        "Any recent changes or power related problem?",
+        "Any error present prior the concern",
+        "What are the troubleshooting performed prior contacting support?"], next: "su_no_power_install" }, 
+
+    
+su_no_power_install: { type: "action", text: 'Kindly follow <a href="https://www.se.com/ph/en/faqs/FA158815/" target="_blank">FA158815</a>', steps: [
+    "Problem #1: Battery is disconnected.",
+    "Problem #2: There is a problem with the power coming from the wall.",
+    "Problem #3: The Circuit Breaker tripped."
+], next: "su_no_power_install1" },
+
+su_no_power_install1: { type: "question", text: 'Confirm if battery is seated correctly, reseat if applicable. Issue resolved?', options: [
+    { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "su_no_power_install2" }
+          ]},     
+
+su_no_power_install2: { type: "question", text: 'Try doing the cold-start procedure. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156611/" target="_blank">FA156611</a> <br><br> Did the UPS turn on?', options: [
+    { label: "Yes", next: "su_no_power_install3" },
+          { label: "No", next: "su_no_power_install4" }
+          ]},
+
+su_no_power_install3: { type: "question", text: 'There is a problem with the power coming from the wall. - try a known-working outlet or if another UPS is present try to swap the power source. Issue resolved?', options: [
+    { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "su_no_power_install4" }
+          ]},    
+          
+
+ 
+su_no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try to reset if applicable. Issue resolved?', options: [
+    { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "warranty_status" }
+          ]},     
 
 
     ups_fault:   { type: "question", text: "What is the concern?", options: [
         { label: "At least one faulty battery exists.", next: "rbl_on" },
-        { label: "Fault active", next: "ups_fault" },
+        { label: "P Error Codes", next: "po_fault" },
+        { label: "B Error Codes", next: "bo_fault" },
+        { label: "G Error Codes", next: "go_fault" },
         { label: "Sizing UPS", next: "sizing" }
         ]},
+
+   sc_issues: { type: "question", text: "What is the customer's concern:", options: [
+        { label: "Delete UPS from Smartconnect", next: "del_sc" },
+        { label: "Sc Codes", next: "sc_fault" },
+        { label: "Warranty Concern", next: "sc_warranty" }
+        
+        ]},
+
+  sc_warranty: { type: "action", text: "Ask for an Inventory report from the users' SmartConnect account. This report indicates the registered user account and serial numbers (manufacture date). <br>Verify the date listed in the report.</br> <br>Verify the UPS end warranty and any extended warranty dates listed in BFO.</br> <br>Verify the UPS end warranty and any extended warranty dates listed in BFO.</br> <br>If there is a discrepancy between what is listed within BFO and the cloud portal report and extended warranty information,</br>", steps: [],next: "end_escalate"
+        
+        },
+        
+  del_sc:{ type: "question", text: 'Please follow <br> See <a href="https://www.se.com/ph/en/faqs/FAQ000282603/"target="_blank">FAQ000282603</a>. Are they able to delete the UPS?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "end_escalate" }
+        
+        ]},
+
+
+  sc_fault: { type: "question", text: "What is the specific fault/status?", options: [
+        { label: "Sc.0/No Ethernet", next: "sc0" },
+        { label: "Sc.2/Addressing", next: "sc2" },
+        { label: "Sc.4/Resolved", next: "sc4" },
+        { label: "Sc.5/Attempting to connect to the cloud", next: "sc5" },
+        { label: "Sc.6/Secured", next: "sc6" },
+        { label: "Sc.7/Disabled", next: "sc7" },
+        { label: "Sc.8/Prohibited", next: "sc8" }
+        
+
+        ]},
+
+
+  sc8: {
+  type: "question",
+  text: `	
+Ethernet connection is not allowed due to a hardware issue or configuration. <br> See <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QxDnIAK/view"target="_blank">FAQ000281188</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "sc0_led_on" },
+	      { label: "Has been working for a while", next: "sc0_led_on" }  
+        
+        ]},  
+
+
+  sc7: {
+  type: "question",
+  text: `The UPS is establishing communication with Schneider Electric cloud services. If issue is displayed for more than 2 mins proceed to next step. <br> See <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QxDnIAK/view"target="_blank">FAQ000281188</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "sc7_1" },
+	      { label: "Has been working for a while", next: "sc7_1" }  
+        
+        ]},  
+
+sc7_1: {
+  type: "question",
+  text: `Confirm if smartconnect is enabled. Issue resolved? `, options: [
+        { label: "Yes", next: "end_fixed" },
+	      { label: "No", next: "end_escalate" }  
+        
+        ]},  
+
+
+
+  sc6: {
+  type: "question",
+  text: `The UPS is establishing communication with Schneider Electric cloud services. If issue is displayed for more than 2 mins proceed to next step. <br> See <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QxDnIAK/view"target="_blank">FAQ000281188</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "sc4_proxy" },
+	      { label: "Has been working for a while", next: "sc4_proxy" }  
+        
+        ]},  
+        
+  
+
+
+  sc5: {
+  type: "question",
+  text: `The UPS is securing the TLS network connection. If issue is displayed for more than 2 mins proceed to next step. <br> See <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QxDnIAK/view"target="_blank">FAQ000281188</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "sc5_tls" },
+	      { label: "Has been working for a while", next: "sc5_tls" }  
+        
+        ]},  
+        
+  sc5_tls: {
+  type: "question",
+  text: `Ensure that the following cipher suites are not blocked in your firewall configuration: <br>TLS_PSK_WITH_AES_128_CCM_8</br> <br>TLS_PSK_WITH_AES_128_CBC_SHA256</br><br>TLS_PSK_WITH_AES_128_CBC_SHA</br><br> Issue resolved? `, options: [
+        { label: "Yes", next: "end_fixed" },
+	      { label: "No", next: "sc5_tls_pcap" }  
+        
+        ]},  
+
+sc5_tls_pcap: {
+  type: "question",
+  text: `Ask the customer to run a Wireshark capture and check the communications between UPS and the cloud. To run the capture connect a PC to the same network as the UPS and launch Wireshark. Press and host the UP and down arrows of the UPS for 10 seconds to reset communications. The UPS will attempt to connect to the cloud. Kindly check if TLS packet shows UPS IP "Client Hello" and the cloud replies "Server Hello". Is "Server Hello" shown? `, options: [
+        { label: "Yes", next: "end_escalate" },
+	      { label: "No", next: "end_notfixed" }  
+        
+        ]}, 
+
+
+
+        sc4:{
+  type: "question",
+  text: `The device is establishing a connection to Schneider Electric cloud services. If issue is displayed for more than 2 mins proceed to next step. <br> See <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QxDnIAK/view"target="_blank">FAQ000281188</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "sc4_proxy" },
+	      { label: "Has been working for a while", next: "sc4_proxy" }  
+        
+        ]},   
+
+  sc4_proxy: {
+  type: "question",
+  text: `To connect to Schneider Electric cloud services, the UPS needs to be able to connect directly to TCP port 443 on cece.prod.struxurewarecloud.com AND lwm2m.na.struxurewarecloud.com. If the network of the UPS is behind a proxy server (e.g. ZScaler), you must add a firewall rule that permits this connection to TCP port 443, and bypasses any proxy service packet inspection. Consult with your Network Administrator to configure this firewall rule. Issue resolved? `, options: [
+        { label: "Yes", next: "end_fixed" },
+	      { label: "No", next: "sc0_led_on" }  
+        
+        ]},     
+        
+        
+  sc2_proxy: {
+  type: "question",
+  text: `SmartConnect-compatible UPS devices only support 10/100 Mbps port speed. If you are using a 1Gb network switch, and the port is not set to auto-configure its speed, this can prevent the device from connecting to Schneider Electric cloud services. Issue resolved? `, options: [
+        { label: "Yes", next: "end_fixed" },
+	      { label: "No", next: "end_escalate" }  
+        
+        ]},      
+
+
+    sc2:{
+  type: "question",
+  text: `The device is obtaining an IP address on the local network via DHCP. If this is displayed for more than 2 minutes, check that the configuration of the DHCP server will allow the MAC address of the device. <br> See <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QxDnIAK/view"target="_blank">FAQ000281188</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "sc2_ipv4" },
+	      { label: "Has been working for a while", next: "sc2_ipv4" }  
+        
+        ]},   
+
+
+  sc2_ipv4: {
+  type: "question",
+  text: `Are they using IPv4 DHCP? <br>Kind refer to <a href="https://community.se.com/t5/Prerequisites/Network-Requirements/ta-p/464523"target="_blank">Network Requirements</a>.</br> `, options: [
+        { label: "Yes", next: "sc2_ipv4_yes" },
+	      { label: "No", next: "end_notfixed" }  
+        
+        ]},      
+
+
+  sc2_ipv4_yes: {
+  type: "question",
+  text: `The router and switch on the network of the APC Smart-UPS device must support a Maximum Transmission Unit (MTU) size of 336 bytes, at a minimum. Issue resolved? `, options: [
+        { label: "Yes", next: "end_fixed" },
+	      { label: "No", next: "sc2_mtu_yes" }  
+        
+        ]},      
+
+
+  sc2_mtu_yes: {
+  type: "question",
+  text: `To connect to Schneider Electric cloud services, the UPS needs to be able to connect directly to TCP port 443 on cece.prod.struxurewarecloud.com AND lwm2m.na.struxurewarecloud.com. If the network of the UPS is behind a proxy server (e.g. ZScaler), you must add a firewall rule that permits this connection to TCP port 443, and bypasses any proxy service packet inspection. Consult with your Network Administrator to configure this firewall rule. Issue resolved? `, options: [
+        { label: "Yes", next: "end_fixed" },
+	      { label: "No", next: "sc2_proxy" }  
+        
+        ]},     
+        
+        
+  sc2_proxy: {
+  type: "question",
+  text: `SmartConnect-compatible UPS devices only support 10/100 Mbps port speed. If you are using a 1Gb network switch, and the port is not set to auto-configure its speed, this can prevent the device from connecting to Schneider Electric cloud services. Issue resolved? `, options: [
+        { label: "Yes", next: "end_fixed" },
+	      { label: "No", next: "end_escalate" }  
+        
+        ]},      
+
+
+  sc0:{
+  type: "question",
+  text: `This is an indicator that the UPS is not detecting a working ethernet/network cable. <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QxDnIAK/view"target="_blank">FAQ000281188</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "sc0_port" },
+	      { label: "Has been working for a while", next: "sc0_port" }  
+        
+        ]},      
+
+
+  sc0_port: { type: "question", text: 'Is the cable installed on the Smartconnect port?', options: [
+        { label: "Yes", next: "sc0_led" },
+        { label: "No", next: "sc0_port1" }  
+        
+        ]},
+
+  sc0_port1: { type: "question", text: 'Please guide the customer for the correct Smartconnect port. Issue resolved??', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "sc0_led" }  
+        
+        ]},
+
+
+  sc0_led: { type: "question", text: 'Is the status and link light turned on?', options: [
+        { label: "Yes", next: "sc0_led_on" },
+        { label: "No", next: "sc0_led_off" }  
+        
+        ]},
+
+  sc0_led_off: { type: "question", text: 'Please try a known-working Ethernet Cable and Switch port. Issue follows:', options: [
+        { label: "UPS", next: "sc0_led_on" },
+        { label: "Network", next: "end_notfixed" }
+                
+        ]},
+
+
+  sc0_led_on: { type: "question", text: 'Please reboot the Smartconnect Network Interface. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "sc0_led_on1" }  
+        
+        ]},
+
+  sc0_led_on1: { type: "question", text: 'Please reset the UPS to default. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},
+
+
+  go_fault: { type: "question", text: "What is the specific fault", options: [
+        { label: "G.00", next: "g00" },
+        { label: "G.01", next: "g01" },
+        { label: "G.02", next: "g02" },
+        { label: "G.03", next: "g03" },
+        { label: "G.04", next: "g04" },
+        { label: "G.05", next: "g05" },
+        { label: "G.06", next: "g06" },
+        { label: "G.07", next: "g07" },
+        { label: "G.08", next: "g08" },
+        { label: "G.11", next: "g11" }
+        
+        ]},
+
+  g11:{
+  type: "question",
+  text: `A typical Uninterruptible Power Supply (UPS) consists of several integrated subsystems that ensure stable and continuous power delivery. The input subsystem conditions incoming AC power using filtering, fault detection, relays, and power factor correction to protect and prepare the system. The logic power supply (LPS) provides stable low-voltage power to internal electronics from multiple sources such as AC input, battery, or the DC bus. The control subsystem, often driven by a digital controller, manages system operation by generating switching signals, monitoring feedback, and coordinating protection features to maintain proper regulation and stability.<br>The charger subsystem converts available power into a regulated DC output for safely charging the battery. It typically uses a controlled switching converter with voltage and current feedback loops to maintain proper charging modes, such as constant current and constant voltage. This subsystem works alongside the main power conversion stage, sensing circuits, and the battery subsystem to ensure the battery remains charged and ready to supply backup power during an outage.</br><br>If a fault occurs within these subsystems, particularly in the charger or control circuits, the UPS will trigger a latched alarm condition. This alarm does not reset automatically, even if the fault condition clears, as it is designed to prevent unsafe operation. Such faults usually indicate an internal hardware failure that cannot be corrected through normal resets or adjustments. In most cases, the affected subsystem is considered non-recoverable and requires replacement to restore proper and safe UPS functionality.</br><br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033jgqIAA/view"target="_blank">FAQ000282142</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "g11_nmclog" },
+	      { label: "Has been working for a while", next: "g11_nmclog" }  
+        
+        ]},      
+
+
+g11_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "g11log" },
+        { label: "Not Available", next: "g11nolog" }  
+        
+        ]},
+
+    g11nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "g11log" },
+        { label: "Not Available", next: "g11sc" }  
+        
+        ]},
+
+    g11sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "g11log" },
+        { label: "Not Available", next: "g11log" }  
+
+    ]},
+
+
+    g11log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "g11_rma" },
+        { label: "No", next: "g11_rma" }  
+                       
+        ]},
+
+  g11_rma: { type: "action", text: 'Issue cannot be cleared onsite. Please proceed with UPS replacement', steps: [], next: "warranty_status"},
+
+
+  
+
+  g08:{
+  type: "question",
+  text: `The UPS firmware is essential for controlling and coordinating critical functions such as alarm operation, intelligent battery charging, and input power monitoring. It manages charger voltage and current setpoints based on battery condition, temperature, load, and input characteristics, while also enabling advanced features such as fast charging to improve battery performance and longevity<br>Additionally, the firmware monitors AC input frequency through a Phase-Lock Loop (PLL) and controls transfers between utility power and battery operation when abnormal conditions are detected. Because these functions depend on precise firmware logic and processor communication, corrupted firmware or a firmware mismatch can result in improper operation, including incorrect charging behavior, inaccurate frequency detection, unexpected alarms, or abnormal power transfer events.</br><br>The system processors may detect a firmware mismatch when actual hardware responses, measured values, or inter-processor communications do not align with the expected outcomes defined by the firmware, indicating a potential firmware inconsistency, corruption, or compatibility issue.</br><br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033nc2IAA/view"target="_blank">FAQ000283057</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "g08_nmclog" },
+	      { label: "Has been working for a while", next: "g08_nmclog" }  
+        
+        ]},
+
+
+
+   g08_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "g08log" },
+        { label: "Not Available", next: "g08nolog" }  
+        
+        ]},
+
+    g08nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "g08log" },
+        { label: "Not Available", next: "g08sc" }  
+        
+        ]},
+
+    g08sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "g08log" },
+        { label: "Not Available", next: "g08log" }  
+
+    ]},
+
+
+    g08log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "g08_fw" },
+        { label: "No", next: "g08_fw" }  
+                       
+        ]},
+
+  g08_fw: { type: "action", text: 'Check the current firmware version of the UPS (via the UPS LCD display, NMC web interface, SmartConnect portal or PowerChute software, if available) and verify that it matches the recommended firmware version for the model. Ensure the UPS is in a state that allows firmware upgrade: stable input power, battery connected, no critical/warning events.', steps: [], next: "fw_update"},
+
+
+  
+
+  g07:{
+  type: "question",
+  text: `The EPO circuit provides an interface to the installation’s emergency power-off (EPO) relay or switch and works with either normally open (NO) or normally closed (NC) contacts. When the EPO is activated through the rear panel connector of the UPS, output power to the loads is removed, and both the power factor correction (PFC) and charger are turned off. However, the logic power supply (LPS) remains on and will only turn off after 10 minutes if AC input is not present. For a NO switch, J305 pins 1 and 2 are wired to the external EPO contact so that when an EPO event occurs, +24V is applied to pin 2, triggering Q322 through resistors and a zener diode. This activates the optocoupler IC312, which sends a logic HIGH signal (EPO_IN_SNS) to the DSP. The DSP then shuts down the UPS outputs, opens outlet groups, and disables charging. The LCD will display “EPO Active” continuously. For an NC switch, pins 1 and 2 are shorted together and connected with pin 3 or 4 to the external EPO contact; operation is the same as above. After the EPO switch is reset, the UPS remains in Hardware Safe Mode until the ON/OFF button is manually pressed. Remote turn-on via NMC, signaling, or software is not allowed after an EPO event—the user must press the button to clear it. In installations with a single EPO master control for multiple systems, each UPS must be connected to separate and isolated EPO contacts on the main EPO switch to avoid loops between internal supplies.<br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyDOIA0/view"target="_blank">FAQ000278287</a>.</br>
+
+
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "g07_nmclog" },
+	      { label: "Has been working for a while", next: "g07_nmclog" }  
+        
+        ]},
+        
+
+  g07_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "g07log" },
+        { label: "Not Available", next: "g07nolog" }  
+        
+        ]},
+
+    g07nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "g07log" },
+        { label: "Not Available", next: "g07sc" }  
+        
+        ]},
+
+    g07sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "g07log" },
+        { label: "Not Available", next: "g07log" }  
+
+    ]},
+
+
+    g07log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "g07epo" },
+        { label: "No", next: "g07epo" }  
+                       
+        ]},
+
+    g07epo: { type: "question", text: 'Are they using EPO or are is something connected to the UPS EPO Port?', options: [
+        { label: "Yes", next: "epo" },
+        { label: "No", next: "epo2" }  
+        
+        ]},  
+
+  epo: { type: "question", text: 'Are they using a device similar to <a href="https://www.se.com/us/en/product/EPW9/emergency-power-off-epo/"target="_blank">EPW9</a>?', options: [
+        { label: "Yes", next: "epo1" },
+        { label: "No", next: "epo2" }  
+        
+        ]},
+
+  epo1: {
+  type: "action",
+  text: "Kindly gather connection of the EPO. Request for Single Line Diagram highlighting connections. Request for images as well.",
+  steps: [],
+  next: "epo2"
+},
+
+epo2: { type: "question", text: 'Request customer to clear the alarm. Issue resolved?', options: [
+        { label: "Yes", next: "fw_update" },
+        { label: "No", next: "brain_dead_g05" }  
+        
+        ]},
+
+
+  g06: {
+  type: "action",
+  text: `When each UPS unit is manufactured, it undergoes calibration during Functional Testing. At this stage, the serial number of the Powerboard is stored on the controller card, creating a matched pair. If the serial numbers do not match, it indicates that the components were not calibrated together, and a “Needs Calibration” fault is triggered.<br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033jgWIAQ/view"target="_blank">FAQ000282140</a>.</br>
+
+<br><br>Issue cannot be cleared onsite.`, steps: 
+                
+      [],
+    next: "warranty_status"
+},
+
+  
+
+  g05: {
+  type: "question",
+  text: `Button Stuck notifications thru NMC or Display, reporting buttons are auto firing or not working.<br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyCpIAK/view"target="_blank">FAQ000278196</a>.</br>
+
+<br>Button is physically stuck after being pressed or pressed too long.</br>
+<br>Due to moisture, dust and debris.<br>
+<br>Possible firmware issue.</br>
+<br>Hardware issue (circuit board, or wiring). </br>
+<br><br>When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "g04_nmclog" },
+	      { label: "Has been working for a while", next: "g05_nmclog" }  
+        
+        ]},
+
+  g05_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "g05log" },
+        { label: "Not Available", next: "g05nolog" }  
+        
+        ]},
+
+    g05nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "g05log" },
+        { label: "Not Available", next: "g05sc" }  
+        
+        ]},
+
+    g05sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "g05log" },
+        { label: "Not Available", next: "g05log" }  
+        
+        ]},
+    g05log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead_g05" },
+        { label: "No", next: "brain_dead_g05" }  
+        
+        ]},  
+
+  brain_dead_g05: { type: "question", text: 'Perform Brain Dead. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156611/" target="_blank">FA156611</a>. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "fw_update" }  
+        
+        ]},
+
+
+  g04: {
+  type: "question",
+  text: `The communications processor is responsible for handling external interfaces (RJ45, USB, Smart Slot, and LCD display), managing internal communication with the DSP, and controlling the Switched Outlet Groups. A communication fault is triggered if communication between the communications processor and the DSP is lost. When this fault occurs, the DSP takes over interpretation of the ON/OFF button; however, the button can only be used to turn the output off.<br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000037o2MIAQ/view"target="_blank">FAQ000281934</a>. When did they notice the alarm?`,
+        options: [
+        { label: "Commissioning", next: "g04_nmclog" },
+	      { label: "Has been working for a while", next: "g04_nmclog" }  
+        
+        ]},
+
+
+   g04_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "g04log" },
+        { label: "Not Available", next: "g04nolog" }  
+        
+        ]},
+
+    g04nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "g04log" },
+        { label: "Not Available", next: "g04sc" }  
+        
+        ]},
+
+    g04sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "g04log" },
+        { label: "Not Available", next: "warranty_status" }  
+        
+        ]},
+    g04log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "warranty_status" },
+        { label: "No", next: "warranty_status" }  
+        
+        ]},  
+
+  g03: {
+  type: "question",
+  text: `The LPS fault is a hardware signal and will be acted upon in all operating conditions. Once this fault is set, the unit power must be cycled to clear it. In the event of this fault, the UPS will enter a failure mode and the load will be dropped whether the fault happens on online or on battery state.<br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyCvIAK/view"target="_blank">FAQ000278288</a>. When did they notice the alarm?`,
+        options: [
+        { label: "Commissioning", next: "b12_nmclog" },
+	      { label: "Has been working for a while", next: "b12_nmclog" }  
+        
+        ]},
+
+  g02: {
+  type: "question",
+  text: `"ADC" stands for Analog Digital Converter. If the 1.5 volt reference or GND signal measured by the ADC is +/- 6% off of nominal for 3 sample readings in a row, the fault will be set. You will see this fault message either on the LCD panel, on the NMC GUI or Event Logs and the beeper will sound.<br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyDMIA0/view"target="_blank">FAQ000281235</a>. When did they notice the alarm?`,
+        options: [
+        { label: "Commissioning", next: "b12_nmclog" },
+	      { label: "Has been working for a while", next: "b12_nmclog" }  
+        
+        ]},
+
+
+  
+
+  g01: {
+  type: "question",
+  text: `Eeprom (G.01) indicates an internal UPS fault.<br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033bKJIAY/view"target="_blank">FA358380</a>. Are you able to clear the alarm? `, options: [
+        { label: "Yes", next: "g01_fw" },
+	      { label: "No", next: "b12_nmclog" }  
+        
+        ]},
+  g01_fw: { type: "question", text: 'Is the UPS firmware updated?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "g01_fw_update" }  
+        
+ ]},
+
+
+  g01_fw_update: { type: "action", text: 'Please perform UPS firmware upgrade. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA164737" target="_blank">FA164737</a>. ', 
+    steps: [],
+    next: "end_fixed"
+},
+
+
+  g00: {
+  type: "question",
+  text: `The Site Wiring Fault (SWF) LED light is only present on 120V UPS and Surge products. On APC UPS products this indicator is typically on the rear panel. The purpose of this indicator light is to warn you that there are problems with your building wiring that may result in a shock hazard.<br> Kindly follow <a href="https://www.se.com/ph/en/faqs/FA158817/"target="_blank">FA158817</a>.</br>
+
+<br>Reasons why the Site Wiring Fault (SWF) LED light will illuminate:</br>
+<br>Overloaded neutral wire (>5 Volts AC measured between Neutral and Ground).<br>
+<br>Reversed polarity (hot and neutral wires are reversed).</br>
+<br>Missing ground wire. (Note: this also includes using a 3 prong to 2 prong adapter)</br>
+<br><br>
+<br>If the outlet that the APC UPS unit is plugged into is not properly grounded or properly wired, the unit will attempt to absorb the excess voltage instead of redirecting it to ground. It would be like attempting to catch a bullet with a catcher's mit. When the SWF light is not on it the device is able to quickly and safely redirect the excess voltage to ground. Therefore, in order to maintain your warranty and protection under APC's Equipment Protection Policy, be sure that the APC unit is only plugged into a properly grounded outlet where the Site Wiring Fault Indicator (SWF) light is not illuminated. When did they noticed the alarm? `, options: [
+        { label: "Commissioning", next: "diff_circuit" },
+	      { label: "Has been working for a while", next: "diff_circuit" }  
+        
+        ]},
+
+
+  diff_circuit: { type: "question", text: 'Can they try another outlet on the same room or on a different part of the building? Fault still active?', options: [
+        { label: "Yes", next: "working" },
+	      { label: "No", next: "wall_outlet" }  
+        
+        ]},
+
+  working: { type: "question", text: 'Do the customer have a known-working UPS?', options: [
+        { label: "Yes", next: "g00_swap" },
+	      { label: "No", next: "wall_outlet" }  
+        
+        ]},
+      
+
+  g00_swap: { type: "question", text: 'Please request the customer to swap. Issue follows:', options: [
+        { label: "UPS", next: "warranty_status" },
+        { label: "Not Possible", next: "end_notfixed" },
+	      { label: "Wall Outlet", next: "wall_outlet" }  
+        
+        ]},
+
+wall_outlet: {
+    type: "action",
+    text: `
+        Please request the customer to check the affected outlet with building maintenance or a licensed electrician.<br><br>
+
+        <strong>Possible causes of the Site Wiring Fault (SWF) LED:</strong><br><br>
+
+        Overloaded neutral wire (more than 5 VAC measured between Neutral and Ground).<br>
+        Reversed polarity (Hot and Neutral wires are reversed).<br>
+        Missing ground wire (this includes the use of a 3-prong to 2-prong adapter).
+    `,
+    steps: [],
+    next: "end_notfixed"
+},
+       
+
+
+  bo_fault: { type: "question", text: "What is the specific fault", options: [
+        { label: "B.00", next: "b00" },
+        { label: "B.01", next: "b01" },
+        { label: "B.02", next: "b02" },
+        { label: "B.03", next: "b03" },
+        { label: "B.04", next: "b04" },
+        { label: "B.05", next: "b05" },
+        { label: "B.07", next: "b07" },
+        { label: "B.12", next: "b12" }
+       
+        ]},
+
+b12:{ type: "question", text: 'Voltage Sense Error: The Volage Sense associated with the B.12 error is most common with the DSP processor of the unit. This means that it could not properly identify the voltage from the DC bus. This can be attributed to either a processor fault or would be related to a permanent damage in the DC bus. . <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyDCIA0/view"target="_blank">FAQ000279924</a>.</br><br>Are you able to clear the fault?</br>', options: [
+        { label: "Yes", next: "end_fixed" },
+	      { label: "No", next: "b12_nmclog" }  
+        
+        ]},
+
+    b12_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "b12log" },
+        { label: "Not Available", next: "b12nolog" }  
+        
+        ]},
+
+    b12nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "b12log" },
+        { label: "Not Available", next: "b12sc" }  
+        
+        ]},
+
+    b12sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "b12log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    b12log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},       
+
+b07: {
+  type: "action",
+  text: `An Internal Battery Overtemperature Warning Alarm with error Code B.07  and Battery OverTemp Alarm is an indicator when the internal battery or Battery in an extended battery pack  temperature measures over 50°C for 5sec.<br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyCsIAK/view"target="_blank">FAQ000278201</a>.</br>
+
+<br>Bring the UPS From Failure to Standby State:</br>
+<br><br>
+<br>Disconnect all loads from the UPS outlets.</br>
+<br>Turn off the UPS completely using the front panel power button.</br>`,
+  steps: [
+    ], next: "b03_batt_cond" },
+
+b03_batt_cond: {
+  type: "question",
+  text: `What is the battery age?`,
+  options: [
+    { label: "New", next: "b03_batt_temp" },
+    { label: "3 Years and up", next: "unable_st" }
+  ]
+},
+
+
+
+b03_batt_temp: {
+  type: "question",
+  text: `Ask the customer to carefully pass their hand near the battery to check if it feels warm or hot.?`,
+  options: [
+    { label: "Warm", next: "b03_batt_temp_warm" },
+    { label: "Cool", next: "b03_batt_temp_cool" }
+  ]
+},
+
+b03_batt_temp_warm: {
+  type: "action",
+  text: "Allow it to cool for 15–30 minutes (depending on room temperature and airflow) before disconnecting it.",
+  steps: [],
+  next: "b03_dry"
+},
+
+b03_batt_temp_cool: {
+  type: "action",
+  text: "Proceed to disconnect the battery from the UPS.",
+  steps: [],
+  next: "b03_dry"
+},
+
+b03_dry: {
+  type: "question",
+  text: `With the battery disconnected, perform a dry start:<br>
+         While connected to AC power, turn on the UPS without the battery installed.<br><br>
+         Is the alarm still active?`,
+  options: [
+    { label: "Yes", next: "brain_dead" },
+    { label: "No", next: "b03_reboot" }
+  ]
+},
+
+b03_reboot: {
+  type: "question",
+  text: `Reconnect battery.<br><br>Verity if their is a noticeable foul smell coming from the battery or any liquid leaking from it. If any of this symptoms exist proceed in following internal PSI guidelines.
+         Falls under PSI?`,
+  options: [
+    { label: "Yes", next: "ups_issue_psi" },
+    { label: "No", next: "b03_standby" }
+  ]
+},
+
+b05:  {
+  type: "question",
+  text: `Description of fault: The Battery Temperature Sensor fault in an Smart UPS indicates that there is a problem with the sensor responsible for monitoring the temperature of the battery pack. This fault can occur due to several reasons, including:
+
+<br>Battery Sensor Malfunction: The temperature sensor itself may be defective or damaged, leading to inaccurate reading.</br>
+<br>Wiring Issues: Loose connections or damaged wiring between the sensor and the UPS can disrupt communication, causing the fault.</br>
+<br>Extreme Temperatures: If the battery temperature exceeds safe operating limits, it may trigger a fault as a protective measure. </br>
+
+<br><br>
+
+Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyDHIA0/view"target="_blank">FAQ000280606</a>.
+
+<br>Check the current thermal status of the unit and installed batteries (RBCs). Is there any thermal concern?</br>`,
+  options: [
+    { label: "Yes", next: "ups_issue_psi" },
+    { label: "No", next: "ovl_1" }
+  ]
+},
+
+
+b04: {
+  type: "action",
+  text: "Possibly an issue with the charger or just the UPS firmware.",
+  steps: [],
+  next: "ovl_1"
+},
+
+
+b03: {
+  type: "action",
+  text: `An Internal Battery Overtemperature Warning Alarm with error Code B.07  and Battery OverTemp Alarm is an indicator when the internal battery or Battery in an extended battery pack  temperature measures over 50°C for 5sec.<br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyCsIAK/view"target="_blank">FAQ000278201</a>.</br>
+
+<br>Bring the UPS From Failure to Standby State:</br>
+<br><br>
+<br>Disconnect all loads from the UPS outlets.</br>
+<br>Turn off the UPS completely using the front panel power button.</br>`,
+  steps: [
+    ], next: "b03_batt_cond" },
+
+b03_batt_cond: {
+  type: "question",
+  text: `What is the battery age?`,
+  options: [
+    { label: "New", next: "b03_batt_temp" },
+    { label: "3 Years and up", next: "unable_st" }
+  ]
+},
+
+
+
+b03_batt_temp: {
+  type: "question",
+  text: `Ask the customer to carefully pass their hand near the battery to check if it feels warm or hot.?`,
+  options: [
+    { label: "Warm", next: "b03_batt_temp_warm" },
+    { label: "Cool", next: "b03_batt_temp_cool" }
+  ]
+},
+
+b03_batt_temp_warm: {
+  type: "action",
+  text: "Allow it to cool for 15–30 minutes (depending on room temperature and airflow) before disconnecting it.",
+  steps: [],
+  next: "b03_dry"
+},
+
+b03_batt_temp_cool: {
+  type: "action",
+  text: "Proceed to disconnect the battery from the UPS.",
+  steps: [],
+  next: "b03_dry"
+},
+
+b03_dry: {
+  type: "question",
+  text: `With the battery disconnected, perform a dry start:<br>
+         While connected to AC power, turn on the UPS without the battery installed.<br><br>
+         Is the alarm still active?`,
+  options: [
+    { label: "Yes", next: "brain_dead" },
+    { label: "No", next: "b03_reboot" }
+  ]
+},
+
+b03_reboot: {
+  type: "question",
+  text: `Reconnect battery.<br><br>Verity if their is a noticeable foul smell coming from the battery or any liquid leaking from it. If any of this symptoms exist proceed in following internal PSI guidelines.
+         Falls under PSI?`,
+  options: [
+    { label: "Yes", next: "ups_issue_psi" },
+    { label: "No", next: "b03_standby" }
+  ]
+},
+
+b03_standby: {
+  type: "question",
+  text: `The UPS should enter Standby Mode, where:.<br><br><br>No output power is presents.</br><br>Batteries continue to charge.</br><br>Display and buttons remain active</br>
+         Alarm active?`,
+  options: [
+    { label: "Yes", next: "unable_st" },
+    { label: "No", next: "b03_on" }
+  ]
+},
+
+b03_on: {
+  type: "question",
+  text: `Turn the UPS on. Alarm active?`,
+  options: [
+    { label: "Yes", next: "unable_st" },
+    { label: "No", next: "b00_fw_update" }
+  ]
+},
+
+
+
+
+b02: {
+  type: "question",
+  text: `User can clear the fault by replacing with new battery.						
+						
+<br><br>						
+						
+						
+										
+Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033bKJIAY/view"target="_blank">FA358380</a>.
+
+<br><br>
+
+What is the battery age?
+`,
+  options: [
+    { label: "New", next: "b02_model" },
+    { label: "3 Years and up", next: "b02_model" }
+  ]
+},
+
+
+b02_model: { type: "question", text: 'Which UPS are they concerned of?', options: [
+        { label: "SMT", next: "b02_smt" },
+	{ label: "SMX", next: "b02_smx" },
+        { label: "SMC", next: "b02_smc" }  
+        
+        ]},
+
+b02_smt: {
+  type: "question",
+  text: `Please perform UPS Self-test. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA405317/"target="_blank">FA405317</a>.
+<br><br>
+
+Self-test passed?`,
+  options: [
+    { label: "Passed", next: "end_fixed" },
+    { label: "Unable", next: "unable_st" },
+    { label: "Failed", next: "batt_with" }
+  ]
+},
+
+
+b02_smx: {
+  type: "question",
+  text: `Please perform UPS Self-test. Do take note if they have external battery packs, test them without battery pack then add one battery at time. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA405317/"target="_blank">FA405317</a>.
+<br><br>
+
+Self-test passed?`,
+  options: [
+    { label: "Passed", next: "end_fixed" },
+    { label: "Unable", next: "unable_st" },
+    { label: "Failed", next: "b02_smx_failed" }
+  ]
+},
+
+b02_smx_failed: {
+  type: "question",
+  text: `Issue with`,
+  options: [
+    { label: "Internal Batteries", next: "batt_warranty_status" },
+    { label: "External Batteries", next: "batt_warranty_status" }
+  ]
+},
+   
+
+
+b02_smc: {
+  type: "question",
+  text: `Please perform UPS Self-test. Kindly follow <a href="https://www.se.com/th/en/faqs/FA335468/"target="_blank">FA335468</a>.
+<br><br>
+
+Self-test passed?`,
+  options: [
+    { label: "Passed", next: "end_fixed" },
+    { label: "Unable", next: "unable_st" },
+    { label: "Failed", next: "batt_with" }
+  ]
+},
+
+
+b01: {
+  type: "question",
+  text: `Warning is auto cleared when battery voltage falls below a limit.						
+Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033bKJIAY/view"target="_blank">FA358380</a>.
+
+<br><br>
+
+What is the battery age?
+`,
+  options: [
+    { label: "New", next: "b00new" },
+    { label: "3 Years and up", next: "b00new" }
+  ]
+},
+
+b00new: {
+  type: "question",
+  text: `Battery Reseat
+<br><br>
+
+  <br>While the unit is online, disconnect the battery of the unit.</br>
+  <br>Wait for a maximum of 5 minutes.</br>
+  <br>Reconnect the battery. It should prompt the question "New Battery Installation?". Select "Yes", then enter the date of the battery installation.</br>
+  <br>Run a self-test.</br>
+
+<br><br>
+Self-test passed?`,
+  options: [
+    { label: "Passed", next: "end_fixed" },
+    { label: "Unable", next: "unable_st" },
+    { label: "Failed", next: "batt_with" }
+  ]
+},
+
+
+unable_st:{ type: "question", text: 'Battery Swap: Doing a battery swap will allow us to see if the issue will follow the battery on a known working unit or if the issue persists.', options: [
+        { label: "Battery Issue", next: "batt_warranty_status" },
+        { label: "UPS Issue", next: "b0_fw" },
+	    { label: "Not Available", next: "batt_warranty_status" }  
+        
+        ]},
+
+b0_fw: { type: "question", text: 'Is the UPS firmware updated?', options: [
+        { label: "Yes", next: "warranty_status" },
+        { label: "No", next: "b00_fw_update" }  
+        
+        ]},
+
+
+b00_fw_update: { type: "question", text: 'Please perform UPS firmware upgrade. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA164737" target="_blank">FA164737</a>. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "warranty_status" }  
+        
+        ]},
+
+
+b00: {
+  type: "question",
+  text: `A UPS may think a battery is disconnected for the following reasons :
+
+<ul>
+  <li>The battery is physically disconnected - This is common with new units as we are Mandated to have the batteries disconnected before a unit is transported / delivered to an end user. </li>
+  <li>The unit has a weak or a discharged battery - This may be caused by an old or aging battery, or the battery has been kept in storage for more than the recommended 6mos shelf life.</li>
+  <li>The charging components of the unit might be compromised - This may be due by prolonged use leading to wear and tear, exposure to harsh environmental conditions, voltage irregularities, or manufacturing defects. Additionally, inadequate maintenance and improper usage can contribute to the degradation of charging components.</li>
+
+Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033cuZIAQ/view"target="_blank">FAQ000267823</a>.
+
+<br><br>
+
+What is the battery age?
+`,
+  options: [
+    { label: "New", next: "b00new" },
+    { label: "3 Years and up", next: "b00new" }
+  ]
+},
+
+b00new: {
+  type: "question",
+  text: `Battery Reseat
+<br><br>
+
+  <br>While the unit is online, disconnect the battery of the unit.</br>
+  <br>Wait for a maximum of 5 minutes.</br>
+  <br>Reconnect the battery. It should prompt the question "New Battery Installation?". Select "Yes", then enter the date of the battery installation.</br>
+  <br>Run a self-test.</br>
+
+<br><br>
+Self-test passed?`,
+  options: [
+    { label: "Passed", next: "end_fixed" },
+    { label: "Unable", next: "unable_st" },
+    { label: "Failed", next: "batt_with" }
+  ]
+},
+
+
+unable_st:{ type: "question", text: 'Battery Swap: Doing a battery swap will allow us to see if the issue will follow the battery on a known working unit or if the issue persists.', options: [
+        { label: "Battery Issue", next: "batt_warranty_status" },
+        { label: "UPS Issue", next: "b0_fw" },
+	    { label: "Not Available", next: "batt_warranty_status" }  
+        
+        ]},
+
+b0_fw: { type: "question", text: 'Is the UPS firmware updated?', options: [
+        { label: "Yes", next: "warranty_status" },
+        { label: "No", next: "b00_fw_update" }  
+        
+        ]},
+
+
+b00_fw_update: { type: "question", text: 'Please perform UPS firmware upgrade. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA164737" target="_blank">FA164737</a>. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "warranty_status" }  
+        
+        ]},
+
+
+
+po_fault: { type: "question", text: "What is the specific fault", options: [
+        { label: "P.00", next: "p00" },
+        { label: "P.01", next: "p01" },
+        { label: "P.02", next: "p02" },
+        { label: "P.03", next: "p03" },
+        { label: "P.04", next: "p04" },
+        { label: "P.05", next: "p05" },
+        { label: "P.06", next: "p06" },
+        { label: "P.07", next: "p07" },
+        { label: "P.08", next: "p08" },
+        { label: "P.13", next: "p13" },
+        { label: "P.16", next: "p16" },
+        { label: "P.17", next: "p17" }
+        ]},
+
+p17:{ type: "question", text: 'Green Relay (P.17) weld is declared if a voltage measured on the output is within 20VAC of the input voltage, and the input voltage is over 60VAC, while the UPS is in an output off state. The voltage must be present for 1 second. This can be purely mechanical OR at times caused by failure of the COM processor failing to talk to the DSP. <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyDAIA0/view"target="_blank">FAQ000279829</a>.</br><br>Are you able to clear the fault?</br>', options: [
+        { label: "Yes", next: "end_fixed" },
+	      { label: "No", next: "p17_nmclog" }  
+        
+        ]},
+
+    p17_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p17log" },
+        { label: "Not Available", next: "p17nolog" }  
+        
+        ]},
+
+    p17nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p17log" },
+        { label: "Not Available", next: "p17sc" }  
+        
+        ]},
+
+    p17sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p17log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    p17log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},       
+
+p13: { type: "question", text: 'Output Relay Weld normally occurs inverter start up, before the output relay is closed. If the Load Voltage is measured to be within 20 volts of the inverter voltage, the fault will be set. The relay must be stuck closed. If the output relay is supposed to be closed and the difference between load and inverter voltage  is more than 20 volts or the output relay is supposed to be open, and the difference between load and inverter voltage is less than 20 volts, the fault will be set.  <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyCwIAK/view"target="_blank">FAQ000278292</a>.</br><br>Are you able to clear the fault?</br>', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "p13_nmclog" }  
+        
+        ]},
+
+    p13_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p13log" },
+        { label: "Not Available", next: "p13nolog" }  
+        
+        ]},
+
+    p13nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p13log" },
+        { label: "Not Available", next: "p13sc" }  
+        
+        ]},
+
+    p13sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p13log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    p13log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},       
+
+p08:{ type: "question", text: 'Output Relay Weld normally occurs inverter start up, before the output relay is closed. If the Load Voltage is measured to be within 20 volts of the inverter voltage, the fault will be set. The relay must be stuck closed. If the output relay is supposed to be closed and the difference between load and inverter voltage  is more than 20 volts or the output relay is supposed to be open, and the difference between load and inverter voltage is less than 20 volts, the fault will be set.  <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033nbTIAQ/view"target="_blank">FAQ000283037</a>.</br><br><strong> For SMX, this is a Latched alert. DO NOT Brain Dead or Cold Start.</strong></br><br>Are you able to clear the fault?</br>', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "SMX", next: "multicall" },
+        { label: "No", next: "p08_nmclog" }  
+        
+        ]},
+
+    p08_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p08log" },
+        { label: "Not Available", next: "p08nolog" }  
+        
+        ]},
+
+    p08nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p08log" },
+        { label: "Not Available", next: "p08sc" }  
+        
+        ]},
+
+    p08sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p08log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    p08log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},       
+
+    p07: {
+  type: "question",
+  text: `
+An Input PFC Relay Weld fault occurs when the UPS detects that the input relay is not operating correctly, typically stuck closed, causing abnormal power flow through the Power Factor Correction (PFC) stage.
+
+This condition can lead to several detectable issues:
+
+<ul>
+  <li>Improper or bypassed DC bus pre-charge behavior</li>
+  <li>Failure of the PFC circuit to boost or regulate voltage</li>
+  <li>Low or unstable DC bus voltage during normal or battery operation</li>
+  <li>Unintended current paths when the inverter is off or during transfer events</li>
+  <li>Delayed DC bus recovery when switching between operating modes</li>
+  <li>Detection of abnormal current draw, indicating possible internal stress or shorting conditions</li>
+</ul>
+
+Because the relay plays a critical role in controlling how input power is applied to the PFC stage, a welded (stuck) contact prevents proper regulation and isolation, leading the UPS to declare a fault condition to protect internal components.
+
+<br><br>
+
+This type of failure is more common in poor power environments. Review logs to see if there appears to be any ongoing power issues at the site. If voltage issues are causing very frequent or constant use of AVR functionality, the customer may want to consult an electrician or widen the transfer point settings for their replacement unit. Be sure to explain AVR functionality to the customer and advise what their options are for configuration.
+
+<br><br>
+
+Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000033m4hIAA/view"target="_blank">FAQ000282649</a>.
+
+<br><br>
+
+Main and LPS backfeed relay faults indicate a failure in the relay drive circuitry, detected via a GPIO signal. In this fault mode, the load is not supported, the main and green relays remain open, and the LPS is powered by AC input (if within range) or by the battery otherwise. The LPS backfeed relay also opens if AC power is unavailable.
+
+<br><br>
+
+Are you able to clear the fault?
+`,
+  options: [
+    { label: "Yes", next: "end_fixed" },
+    { label: "No", next: "p07_nmclog" }
+  ]
+},
+    p07_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p07log" },
+        { label: "Not Available", next: "p07nolog" }  
+        
+        ]},
+
+    p07nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p07log" },
+        { label: "Not Available", next: "p07sc" }  
+        
+        ]},
+
+    p07sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p07log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    p07log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},       
+
+
+    p06:{ type: "question", text: 'This type of failure is more common in poor power environments. Review logs to see if there appears to be any ongoing power issues at the site. If voltage issues are causing very frequent or constant use of AVR functionality the customer may want to consult an electrician or to widen the transfer point settings for their replacement unit. Be sure to explain ARV functionality to the customer and advise what their options are for configuration.  <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002Qy0RIAS/view"target="_blank">FA265563</a>.</br><br>Main and LPS backfeed relay faults indicate a failure in the relay drive circuitry, detected via a GPIO signal; in this fault mode, the load is not supported, the main and green relays remain open, and the LPS is powered by AC input (if within range) or by the battery otherwise, while the LPS backfeed relay also opens if AC power is unavailable.</br><br>Are you able to clear the fault?</br>', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "p06_nmclog" }  
+        
+        ]},
+
+    p06_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p06log" },
+        { label: "Not Available", next: "p06nolog" }  
+        
+        ]},
+
+    p06nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p06log" },
+        { label: "Not Available", next: "p06sc" }  
+        
+        ]},
+
+    p06sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p06log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    p06log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},       
+
+    p05: { type: "question", text: 'A Backfeed Relay in a UPS (Uninterruptible Power Supply) is a protective device that prevents electrical energy from flowing back from the UPS output to the input supply when the main power is disconnected, ensuring personnel and equipment safety. It is especially active when the UPS switches between operating states or when power is being supplied to the LPS or internal communications (such as buttons, display, and outlet control), preventing hazardous backfeed during transitions. <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000003C0gvIAC/view"target="_blank">FAQ000282116</a>.</br><br>Main and LPS backfeed relay faults indicate a failure in the relay drive circuitry, detected via a GPIO signal; in this fault mode, the load is not supported, the main and green relays remain open, and the LPS is powered by AC input (if within range) or by the battery otherwise, while the LPS backfeed relay also opens if AC power is unavailable.</br><br><strong> For SMX, this is a Latched alert. DO NOT Brain Dead or Cold Start.</strong></br><br>Are you able to clear the fault?</br>', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "SMX", next: "multicall" },
+        { label: "No", next: "p05_nmclog" }  
+        
+        ]},
+
+    p05_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p05log" },
+        { label: "Not Available", next: "p05nolog" }  
+        
+        ]},
+
+    p05nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p05log" },
+        { label: "Not Available", next: "p05sc" }  
+        
+        ]},
+
+    p05sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p05log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    p05log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},   
+
+    p04:{ type: "question", text: 'An Overtemperature Alarm with error Code P.04 is an indicator either the temperature measures over 85°C for 30msec or If internal temperature sensor is sensed to be disconnected. <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyCqIAK/view"target="_blank">FAQ000278198</a>.</br><br>If one of the windings is not giving out proper DC power to any of the above mentioned components, the entire UPS can be affected. If this is detected by the processor then a fault will be logged.</br><br>Please check ventillations if they are obstructed. ?</br>', options: [
+        { label: "Yes", next: "p04_obs" },
+        { label: "No", next: "p04_nmclog" }  
+        
+        ]},
+
+    p04_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p04log" },
+        { label: "Not Available", next: "p04nolog" }  
+        
+        ]},
+
+    p04nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p04log" },
+        { label: "Not Available", next: "p04sc" }  
+        
+        ]},
+
+    p04sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p04log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    p04log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "p04_noobs" },
+        { label: "No", next: "p04_noobs" }  
+        
+        ]},   
+  
+
+    p04_noobs: { type: "question", text: 'Cool the UPS down but removing the loads and turning the UPS Off. Make sure the UPS is within the operating environment for about 30 mins. Power cyle the UPS. Issue resolved?   ', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "brain_dead" }  
+
+     ]},
+
+    p04_obs:{ type: "question", text: 'Kindly ask the customer to clear the obstruction using compressed air. Make sure the UPS is within the operating environment for about 30 mins. Power cyle the UPS. Issue resolved?  ', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "brain_dead" }  
+
+     ]},
+
+
+    p03: { type: "question", text: 'The Transformer DC Imbalance is related to the LPS. The Logic Power Supply (LPS) is a fixed frequency flyback converter with an operating range of 60VDC to 500VDC. <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyDBIA0/view"target="_blank">FAQ000279921</a>.</br><br>If one of the windings is not giving out proper DC power to any of the above mentioned components, the entire UPS can be affected. If this is detected by the processor then a fault will be logged.</br><br>Are they able to clear the fault?</br>', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "p03_nmclog" }  
+        
+        ]},
+
+
+    p03_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p03log" },
+        { label: "Not Available", next: "p03nolog" }  
+        
+        ]},
+
+    p03nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p03log" },
+        { label: "Not Available", next: "p03sc" }  
+        
+        ]},
+
+    p03sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p03log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    p03log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},   
+
+    brain_dead: { type: "question", text: 'Perform Brain Dead. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156611/" target="_blank">FA156611</a>. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "warranty_status" }  
+        
+        ]},
+
+
+    
+
+    p02: { type: "question", text: 'An Output Overvoltage Fault in a Line Interactive Smart-UPS means that either the output current sense is compromised (permanent error). This lies in the inverter stage of the UPS and could be caused by a glitch due to firmware or possibly an issue with the DSP processor incorrectly sending values to the COM processor. <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000003C0gWIAS/view"target="_blank">FAQ000282115</a></br><br>Are they able to clear the fault?</br>', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "comms_cable" }  
+        
+        ]},
+
+    comms_cable: { type: "question", text: 'Kindly check if there are communication cables that are not needed and remove them. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "p02_nmclog" }  
+        
+        ]},
+
+        p02_nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p02log" },
+        { label: "Not Available", next: "p02nolog" }  
+        
+        ]},
+
+    p02nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p02log" },
+        { label: "Not Available", next: "p02sc" }  
+        
+        ]},
+
+    p02sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p02log" },
+        { label: "Not Available", next: "brain_dead" }  
+        
+        ]},
+
+    p02log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "brain_dead" },
+        { label: "No", next: "brain_dead" }  
+        
+        ]},   
+
+    brain_dead: { type: "question", text: 'Perform Brain Dead. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156611/" target="_blank">FA156611</a>. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "warranty_status" }  
+        
+        ]},
+
+
+    p01: { type: "question", text: 'A Short Circuit Fault in an SMT & SMC Smart-UPS is caused by a short circuit present on the output of the UPS. <br> Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000037rKeIAI/view"target="_blank">FAQ000279830</a></br> <br>Short circuit is defined as an RMS current over 60A and a RMS voltage of less than 30V for 100ms, followed by an additional 1900ms with an RMS current over 30A and an RMS voltage less than 30V during current limit fold back. </br>Are you able to clear the alarm using the LCD?', options: [
+        { label: "Yes", next: "nmclog" },
+        { label: "No", next: "nmclog" }  
+        
+        ]},
+
+    nmclog: { type: "question", text: 'Kindly check the NMC for logs. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156131/"target="_blank">FA156131</a>.', options: [
+        { label: "Available", next: "p01log" },
+        { label: "Not Available", next: "p01nolog" }  
+        
+        ]},
+
+    p01nolog: { type: "question", text: 'Kindly check the UPS LCD for logs.', options: [
+        { label: "Available", next: "p01log" },
+        { label: "Not Available", next: "p01sc" }  
+        
+        ]},
+
+    p01sc: { type: "question", text: 'Kindly check the UPS Smartconnect Portal for logs.', options: [
+        { label: "Available", next: "p01log" },
+        { label: "Not Available", next: "p01ts" }  
+        
+        ]},
+
+    p01log: { type: "question", text: 'Please review the logs that will explain the reason of the fault especially load related. Are you able to identify?', options: [
+        { label: "Yes", next: "p01ts" },
+        { label: "No", next: "p01ts" }  
+        
+        ]},
+
+    p01ts: { type: "question", text: 'Is the Circuit Breaker tripped?', options: [
+        { label: "Yes", next: "cbtripped" },
+        { label: "No", next: "faultyload1" }  
+        
+        ]},
+
+    cbtripped: { type: "question", text: 'Are you able to reset the circuit breaker?', options: [
+        { label: "Yes", next: "faultyload1" },
+        { label: "No", next: "warranty_status" }  
+        
+        ]},
+
+    cbnoreset: { type: "question", text: 'Disconnect non-essential loads. Issue resolved?', options: [
+        { label: "Yes", next: "cbreset" },
+        { label: "No", next: "inrush2" }  
+        
+        ]},
+
+    p00: { type: "question", text: 'Output Overloaded can happen in 2 ways: <br>If the Output Power in Watts is over 106% of the rated output, the fault will be set.</br> <br>If the Output Power in VA is over 106% of the rated output, the fault will be set </br>. Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj000002QyCrIAK/view"target="_blank">FAQ000278200</a> <br>Please choose the closest:</br>' ,
+    
+    
+    
+    options: [
+        { label: "Too many devices connected to the UPS.", next: "ovl" },
+        { label: "High‑inrush devices connected (e.g., laser printers, motors, heaters).", next: "inrush" },
+        { label: "Sudden load spikes", next: "inrush" },
+        { label: "Connecting devices that feature dual/redundant power inputs.", next: "dual" },
+        { label: "Faulty downstream equipment drawing excessive current.", next: "faultyload" }
+        ]},
+
+
+   faultyload: { type: "question", text: "Try to remove the loads and reboot the UPS. Issue resolved?", options: [
+        { label: "Yes", next: "faultyload1" },
+        { label: "No", next: "warranty_status" }  
+        
+        ]},
+  
+  faultyload1: { type: "question", text: "Install one device at a time. Make sure they are fully booted before adding the next load. Issue identified?", options: [
+        { label: "Issue with one of the loads", next: "end_fixed" },
+        { label: "Not able to identified", next: "end_escalate" }  
+        
+        ]},
+  
+  dual: { type: "question", text: "Please check with the customer if there is a device with dual power source connected to the same UPS and ask to move the other plug to a different power source. Issue resolved?", options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "inrush2" }  
+        
+        ]},
+
+
+    
+  inrush: {
+  type: "question",
+  text: 'Smart-UPS products are typically designed with the IT user in mind and may not be compatible with other types of loads, such as those found in Industrial or scientific applications. Typical Smart-UPS applications would include servers, computers, routers & switches, telecom, etc. Please refer to <a href="https://www.se.com/ph/en/faqs/FA416214" target="_blank" rel="noopener noreferrer">FA416214</a>.<br><br>You may find that your Smart-UPS product reports errors or even suffers a hardware failure if used in these types of applications. Proper performance may require an oversized Smart-UPS solution, or in some cases may not be possible at all. You may find that the manufacturer of your equipment has a recommended list of UPS solutions that they have already tested and are known to work.<br> <br> Customer agreed?',
+  options: [
+    { label: "Yes", next: "end_fixed" },
+    { label: "No", next: "inrush2" }
+  ]
+},
+
+    inrush2: { type: "question", text: "Kindly gather the following Load related information: <br>Typical Steady State Draw<br><br>Maximum In-rush Current<br><br>Maximum In-rush Duration<br><br>Equipment Models<br>", options: [
+        { label: "Available", next: "end_escalate" },
+        { label: "Not Available", next: "end_notfixed" }  
+        
+        ]},
+
+    ovl: { type: "question", text: "Reduced Load between 80-100%. Issue resolved?", options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "ovl_1" }  
+        
+        ]},
+
+    ovl_1: { type: "question", text: 'Perform Brain Dead. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA156611/" target="_blank">FA156611</a>. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "ovl_2" }  
+        
+        ]},
+
+    ovl_2: { type: "question", text: 'Is the UPS firmware updated?', options: [
+        { label: "Yes", next: "warranty_status" },
+        { label: "No", next: "fw_update" }  
+        
+        ]},
+
+
+    fw_update: { type: "question", text: 'Please perform UPS firmware upgrade. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA164737" target="_blank">FA164737</a>. Issue resolved?', options: [
+        { label: "Yes", next: "end_fixed" },
+        { label: "No", next: "warranty_status" }  
+        
+        ]},
+
+    warranty_status: { type: "question", text: "Is the UPS still in warranty?", options: [
+        { label: "Yes", next: "multicall" },
+        { label: "No", next: "end_notfixed" }
+        
+        ]},    
+
+    batt_warranty_status: { type: "question", text: "Is the Battery still in warranty?", options: [
+        { label: "Yes", next: "batt_with" },
+        { label: "No", next: "end_notfixed" }
+        
+        ]},    
+
+    batt_with:
+
+    { type: "action", text: 'Battery needs to be replaced. Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000037pd0IAA/view" target="_blank" rel="noopener noreferrer">RMA</a> Process.', steps: [
+    ], next: "multicall" },
+
+
+    
+    
+
+    multicall: { type: "action", text: 'UPS Needs to be replaced. Kindly follow <a href="https://se.lightning.force.com/lightning/r/Knowledge__kav/ka0Kj0000037pd0IAA/view" target="_blank" rel="noopener noreferrer">RMA</a> Process.', steps: [
+    ], next: "RMA_ROUTER" },
+
+    
 
     rbl_on: { type: "question", text: "Does the UPS support External Battery Packs?", options: [
         { label: "Yes", next: "bp_yes" },
@@ -494,7 +2097,21 @@ batt_warranty: { type: "question", text: 'Is the battery covered by active warra
     
   
     
-      
+      NA_RMA: { type: "action", text: 'Please follow <a href="https://schneiderelectric.sharepoint.com/:p:/r/sites/CaviteHub-Onetech-SecurePower/East%20Asia%20Process/Processes/East%20Asia%20RMA%20Process%20-%20Copy%202026.pptx?d=wbc893365312d41fb8558c712de0ea41c&csf=1&web=1&e=x3eDHr" target="_blank" rel="noopener noreferrer">RMA</a> Process.', steps: [
+    ], next: "EMAIL_TEMPLATE" },
+        
+
+      EU_RMA: { type: "action", text: 'Please follow <a href="https://schneiderelectric.sharepoint.com/:p:/r/sites/CaviteHub-Onetech-SecurePower/East%20Asia%20Process/Processes/East%20Asia%20RMA%20Process%20-%20Copy%202026.pptx?d=wbc893365312d41fb8558c712de0ea41c&csf=1&web=1&e=x3eDHr" target="_blank" rel="noopener noreferrer">RMA</a> Process.', steps: [
+    ], next: "EMAIL_TEMPLATE" },
+        
+
+      LATAM_RMA: { type: "action", text: 'Please follow <a href="https://schneiderelectric.sharepoint.com/:p:/r/sites/CaviteHub-Onetech-SecurePower/East%20Asia%20Process/Processes/East%20Asia%20RMA%20Process%20-%20Copy%202026.pptx?d=wbc893365312d41fb8558c712de0ea41c&csf=1&web=1&e=x3eDHr" target="_blank" rel="noopener noreferrer">RMA</a> Process.', steps: [
+    ], next: "EMAIL_TEMPLATE" },
+        
+
+      MEA_RMA: { type: "action", text: 'Please follow <a href="https://schneiderelectric.sharepoint.com/:p:/r/sites/CaviteHub-Onetech-SecurePower/East%20Asia%20Process/Processes/East%20Asia%20RMA%20Process%20-%20Copy%202026.pptx?d=wbc893365312d41fb8558c712de0ea41c&csf=1&web=1&e=x3eDHr" target="_blank" rel="noopener noreferrer">RMA</a> Process.', steps: [
+    ], next: "EMAIL_TEMPLATE" },
+        
 
     EA_RMA: { type: "action", text: 'Please follow <a href="https://schneiderelectric.sharepoint.com/:p:/r/sites/CaviteHub-Onetech-SecurePower/East%20Asia%20Process/Processes/East%20Asia%20RMA%20Process%20-%20Copy%202026.pptx?d=wbc893365312d41fb8558c712de0ea41c&csf=1&web=1&e=x3eDHr" target="_blank" rel="noopener noreferrer">RMA</a> Process.', steps: [
     ], next: "EMAIL_TEMPLATE" },
@@ -700,7 +2317,17 @@ oldbatt_action: {
     backups_alarm: {type: "question", text: 'Please take note of the Visual and Audible Alarm present and refer to UPS User Guide for the list. Kindly follow <a href="https://www.se.com/ph/en/faqs/FA158827/" target="_blank">FA158827</a> ', options: [
         { label: "Available on the User Guide", next: "alarm1" },
         { label: "F0 error", next: "alarm4" },
+        { label: "Battery Related Concern", next: "backups_rbl" },
         { label: "Not available on the User Guide", next: "alarm2" }
+
+        ]
+    },
+
+    backups_rbl: {type: "question", text: 'Please take note of the Visual and Audible Alarm present and refer to UPS User Guide for the list. ', options: [
+        { label: "Replace Battery LED Solid", next: "alarm1" },
+        { label: "Replace Battery LED Flashing", next: "alarm4" },
+        { label: "Battery Charge Indicator Flashing and Empty", next: "backups_rbl" },
+        { label: "Replace Battery Icon ", next: "alarm2" }
 
         ]
     },
@@ -798,26 +2425,24 @@ no_power_install1: { type: "question", text: 'Confirm if battery is seated corre
           { label: "No", next: "no_power_install2" }
           ]},     
 
-no_power_install2: { type: "question", text: 'There is a problem with the power coming from the wall. - try a known-working outlet or if another UPS is present try to swap the power source. Issue resolved?', options: [
-    { label: "Yes", next: "end_fixed" },
-          { label: "No", next: "no_power_install3" }
-          ]},     
- 
-no_power_install3: { type: "question", text: 'The Circuit Breaker tripped, try to reset if applicable. Issue resolved?', options: [
+no_power_install2: { type: "question", text: 'Try doing the cold-start procedure. Kindly follow <a href="https://www.se.com/ph/en/faqs/FAQ000268871/" target="_blank">FAQ000268871</a> <br><br> Did the UPS turn on?', options: [
+    { label: "Yes", next: "no_power_install3" },
+          { label: "No", next: "no_power_install4" }
+          ]},
+
+no_power_install3: { type: "question", text: 'There is a problem with the power coming from the wall. - try a known-working outlet or if another UPS is present try to swap the power source. Issue resolved?', options: [
     { label: "Yes", next: "end_fixed" },
           { label: "No", next: "no_power_install4" }
+          ]},    
+          
+
+ 
+no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try to reset if applicable. Issue resolved?', options: [
+    { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "warranty_status" }
           ]},     
 
-    no_power_install6: { type: "question", text: "Issue Resolved?", options: [
-          { label: "Yes", next: "end_fixed" },
-          { label: "No", next: "end_escalate" }
-          ]},     
 
-
-      no_power_install4: { type: "question", text: "Is Parts Activation Required?", options: [
-          { label: "Yes", next: "parts_activation" },
-          { label: "No", next: "RMA_ROUTER" }
-          ]},     
 
            
     
@@ -1515,6 +3140,12 @@ let savedBatterySerial = "N/A";
 let savedBatteryAge = "N/A";
 let savedNmcWorkedNotes = "N/A";
 let savedManualReason = "N/A";
+let savedSteadyStateDraw = "N/A";
+let savedMaxInrushCurrent = "N/A";
+let savedMaxInrushDuration = "N/A";
+let savedEquipmentModels = "N/A";
+
+let inrushFieldsAdded = false;
 
 function detectModel(model) {
 
@@ -1731,25 +3362,46 @@ function autoDetectModel() {
     const dynamicFields = document.getElementById("dynamicFields");
 
 if (result.category === "Uninterruptible Power Supply UPS") {
+
+    let batteryPackFields = "";
+
+    if (model.toUpperCase().startsWith("SMX")) {
+        batteryPackFields = `
+            <input id="batterypackmodel"
+                   class="select"
+                   placeholder="Battery Pack Model Number">
+
+            <input id="batterypackserial"
+                   class="select"
+                   placeholder="Battery Pack Serial Number">
+
+            <br><br>
+        `;
+    }
+
     dynamicFields.innerHTML = `
-        <input id="batterypackmodel"
-               class="select"
-               placeholder="Battery Pack Model Number">
-        <input id="batterypackserial"
-               class="select"
-               placeholder="Battery Pack Serial Number">
+        ${batteryPackFields}
 
         <input id="batterySerialInput"
                class="select"
                placeholder="Battery Serial Number">
+        <br><br>
 
         <div id="batteryAgeResult" class="step">
             Battery Age: Not Calculated
         </div>
+        <br><br>
 
         <input id="upsFirmware" class="select" placeholder="UPS Firmware">
         <input id="upsLoads" class="select" placeholder="UPS Load Model">
+        <input id="upsLoadsper" class="select" placeholder="UPS Load %">
         <input id="nmcUsage" class="select" placeholder="Using NMC or Software">
+        <input id="installDate" class="select" placeholder="Device Install Date">
+        <input id="BattRDate" class="select" placeholder="Battery Replacement Date">
+        <input id="EnvRead" class="select" placeholder="Ambient Operating Temperature/Humidity">
+        <input id="recent" class="select" placeholder="Any recent events?">
+        
+        
     `;
 }
  else if (result.category === "Data Center Infrastructure Management (DCIM) Software") {
@@ -1849,6 +3501,26 @@ result.innerHTML =
    </span>`;
 });
 
+document.body.addEventListener("input", (e) => {
+
+    if (e.target.id === "steadyStateDraw") {
+        savedSteadyStateDraw = e.target.value;
+    }
+
+    if (e.target.id === "maxInrushCurrent") {
+        savedMaxInrushCurrent = e.target.value;
+    }
+
+    if (e.target.id === "maxInrushDuration") {
+        savedMaxInrushDuration = e.target.value;
+    }
+
+    if (e.target.id === "equipmentModels") {
+        savedEquipmentModels = e.target.value;
+    }
+
+});
+
 
 // Populate symptom select
 
@@ -1911,6 +3583,42 @@ function renderNode(nodeId){
   title.className = 'question';
   title.innerHTML = node.text;
   nodeView.appendChild(title);
+
+  if (nodeId === "inrush2" && !inrushFieldsAdded) {
+
+    const dynamicFields =
+        document.getElementById("dynamicFields");
+
+    dynamicFields.insertAdjacentHTML("beforeend", `
+
+        <div id="inrushFields">
+
+            <input id="steadyStateDraw"
+                   class="select"
+                   placeholder="Typical Steady State Draw"
+                   value="${savedSteadyStateDraw === 'N/A' ? '' : savedSteadyStateDraw}">
+
+            <input id="maxInrushCurrent"
+                   class="select"
+                   placeholder="Maximum In-rush Current"
+                   value="${savedMaxInrushCurrent === 'N/A' ? '' : savedMaxInrushCurrent}">
+
+            <input id="maxInrushDuration"
+                   class="select"
+                   placeholder="Maximum In-rush Duration"
+                   value="${savedMaxInrushDuration === 'N/A' ? '' : savedMaxInrushDuration}">
+
+            <textarea id="equipmentModels"
+                      class="select"
+                      rows="4"
+                      placeholder="Make and Model of all equipment attached to the UPS">${savedEquipmentModels === 'N/A' ? '' : savedEquipmentModels}</textarea>
+
+        </div>
+
+    `);
+
+    inrushFieldsAdded = true;
+}
 
   if(node.type === 'question'){
     const opts = document.createElement('div');
@@ -1982,7 +3690,11 @@ function renderNode(nodeId){
 
       opts.appendChild(b);
     });
-    nodeView.appendChild(opts);
+    
+
+   
+
+nodeView.appendChild(opts);
 
   }
 
@@ -2028,6 +3740,25 @@ else if(node.type === 'text') {
     const nextBtn = document.createElement('button');
     nextBtn.className = 'btn';
     nextBtn.textContent = 'Next ▶';
+
+    nextBtn.addEventListener('click', () => {
+
+    if (currentNodeId === "inrush2") {
+        savedSteadyStateDraw =
+            document.getElementById("steadyStateDraw")?.value || "N/A";
+
+        savedMaxInrushCurrent =
+            document.getElementById("maxInrushCurrent")?.value || "N/A";
+
+        savedMaxInrushDuration =
+            document.getElementById("maxInrushDuration")?.value || "N/A";
+
+        savedEquipmentModels =
+            document.getElementById("equipmentModels")?.value || "N/A";
+    }
+
+    goto(node.next);
+});
 
     nextBtn.addEventListener('click', () => {
 
@@ -2385,6 +4116,8 @@ exportBtn.addEventListener('click', () => {
   const caseNumber = document.getElementById('caseNumber').value || "N/A";
   const engineerName = document.getElementById('engineerName').value || "N/A";
   const mainConcern = document.getElementById("mainConcern")?.value || "N/A";
+ 
+
   const globalNotes =
     document.getElementById('globalNotes')?.value || "N/A";
 
@@ -2399,7 +4132,12 @@ const pcDateTime = now.toLocaleString();
   // UPS fields
   const upsFirmware = document.getElementById('upsFirmware')?.value || "N/A";
   const upsLoad = document.getElementById('upsLoads')?.value || "N/A";
+  const upsLoadsper = document.getElementById('upsLoadsper')?.value || "N/A";
   const nmcUsage = document.getElementById('nmcUsage')?.value || "N/A";
+  const installDate = document.getElementById('installDate')?.value || "N/A";
+  const BattRDate = document.getElementById('BattRDate')?.value || "N/A";
+  
+  
 
   // DCIM fields
   const nmcFirmware = document.getElementById('nmcFirmware')?.value || "N/A";
@@ -2440,14 +4178,24 @@ lines.push("=== Additional Notes ===");
 lines.push(globalNotes);
 lines.push("");
 
+
 lines.push("=== Dynamic Details ===");
 
 const dynamicFields = [
     "batterySerialInput",
+    "installDate",
+    "BattRDate",
+    "EnvRead",
+    "recent",
+    "upsLoadsper",
     "batterypackmodel",
     "batterypackserial",
     "upsFirmware",
     "upsLoads",
+    "steadyStateDraw",
+    "maxInrushCurrent",
+    "maxInrushDuration",
+    "equipmentModels",
     "nmcUsage",
     "nmcFirmware",
     "SoftwareVersion",
@@ -2476,8 +4224,7 @@ if (
 }
 
 
-
-
+lines.push("");
 
 
 
@@ -2559,7 +4306,15 @@ document.body.addEventListener("dblclick", function() {
         "Sherie Paredes\n" +
         "Mc Rutaquio\n" +
         "Mico Oliveros\n" +
+        "Neil Vargas\n" +
+        "June Ric Corpuz\n" +
+        "Kimver Mangohig\n" +
+        "Nina Difuntorum\n" +
+        "Cholo Corcuera\n" +
+        "Alyssa Marcial\n" +
+        "Ryan Gutierrez\n" +
         "Gen Boni"
+        
     );
 });
 
