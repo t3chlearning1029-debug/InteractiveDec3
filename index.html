@@ -2677,7 +2677,7 @@ no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try t
     text: `
         Try to access the NMC via SSH/Telnet
         <br><br>
-        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/Doc.aspx?sourcedoc={626aeeb7-e164-4eca-94fe-1c5d98c872cb}&amp;action=embedview&amp;wdAr=1.3333333333333333" width="476px" height="288px" frameborder="0" title="PowerPoint Viewer">This is an embedded <a target="_blank" href="https://office.com">Microsoft Office</a> presentation, powered by <a target="_blank" href="https://office.com/webapps">Office</a>.</iframe>
+        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=8a4d4bc0-f39a-4980-bfd8-0c72bd0ffedd&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="webCLI.mp4"></iframe>
 
            
     `,
@@ -2714,8 +2714,14 @@ no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try t
         <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=8a4d4bc0-f39a-4980-bfd8-0c72bd0ffedd&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="webCLI.mp4"></iframe>
     `, options: [
           { label: "Yes", next: "nmc_security_wizard" },
-          { label: "No", next: "end_escalate" }
+          { label: "No", next: "no_ssl1" }
           ]},      
+
+
+    no_ssl1: { type: "question", text: 'Please perform a low-level format : <a href="https://www.se.com/ph/en/faqs/FAQ000265969/" target="_blank" rel="noopener noreferrer">FAQ000265969.</a>. Issue resolved?', options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},  
           
     nmc_security_wizard: { type: "question", text: "Which SSL Configuration Method are they using?", options: [
           { label: "Default certificate auto-generated", next: "auto_ssl" },
@@ -2732,7 +2738,7 @@ no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try t
           ]},          
 
 
-    nmc_no_cli: { type: "action",  steps: [
+    nmc_no_cli: { type: "action",  text: "Try to access the NMC locally:", steps: [
         "Access the NMC via local connection: https://www.se.com/ph/en/faqs/FA293874/ ",
         "Check if Http/Https is enabled",
         "If Https is enabled make sure to use https:// when accessing the web.",
@@ -2817,7 +2823,7 @@ no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try t
        
       pdu_q2: { type: "question", text: "What is the customer's concern?", options: [
         { label: "Power-Related Concern", next: "pdu_power" },
-        { label: "NMC-Related Issue", next: "unauthorized_web" }
+        { label: "NMC-Related Issue", next: "nd_q3" }
       ]},
 
       pdu_power: { type: "question", text: "Please select the customer's concern", options: [
@@ -2842,6 +2848,285 @@ no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try t
 
 
       
+      nd_q3: { type: "question", text: "What is the concern?", options: [
+        { label: "Cannot access the Web Interface", next: "nd_q4" },
+        { label: "Unauthorized user attempting to access Web", next: "unauthorized_web" },
+        { label: "NMC Firmware Upgrade", next: "nmc_fw" },
+        { label: "Unauthorized user attempting to access SNMP", next: "unauthorized_snmp" }
+      ]},
+
+
+      nmc_fw: { type: "question", text: "What is the current NMC version?", options: [
+        { label: "x.x.x.", next: "xxx" },
+        { label: "x.x.x.x", next: "xxxx" }
+      ]},
+
+      xxxx: { type: "question", text: "Which version of Firmware?", options: [
+        { label: "Secure NMC System (3.x.x.x)", next: "sns" },
+        { label: "Non-Secure NMC System (2.x.x.x)", next: "nsns" }
+
+        ]},
+
+      sns: { type: "action",  steps: [
+        "Download SFNMC3SNST from our website: (https://www.se.com/ph/en/product/SFNMC3SNST/secure-nmc-system-tool-for-ups-and-pdu-proactive-cybersecurity-and-firmware-management/)",
+        "Customer needs to make sure they download the tool for the Operating System they are going to use."], next: "sns_1" },
+
+        sns_1: { type: "question", text: "What is the Operating System they wish to install:", options: [
+          { label: "Windows", next: "Win" },
+          { label: "Linux", next: "Lin" },
+          { label: "MAC", next: "Mac" }
+          ]},     
+
+    
+      unauthorized_snmp: { type: "action",  steps: [
+        "Request the NMC debug.tar: (https://www.se.com/ph/en/faqs/FA156131/)",
+        "Confirm if the alarm is present on the event.txt.",
+        "Ask the customer to identify the IP address on the alarm and ask the customer to investigate if a user owns it",
+        "Determine if the IP address do have a Network Scanner or SNMP application that maybe trying to retrieve details from the NMC",
+        "You may follow: https://www.se.com/ph/en/faqs/FAQ000262764/"], next: "unauthorized_snmp1" }, 
+      
+      unauthorized_snmp1: { type: "question", text: "Issue Resolved", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},     
+
+      unauthorized_web: { type: "action",  steps: [
+        "Request the NMC debug.tar: (https://www.se.com/ph/en/faqs/FA156131/)",
+        "Confirm if the alarm is present on the event.txt.",
+        "Ask the customer to identify the IP address on the alarm and ask the customer to investigate if a user owns it",
+        "Explain to customer that this error happens when someone is trying to access the NMC using the wrong credentials",
+        "You may simulate this but asking the customer to try logging in with the wrong credentials and check the event logs after"], next: "unauthorized_web1" },   
+
+      unauthorized_web1: { type: "question", text: "Issue Resolved", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},     
+
+      nd_q4: { type: "question", text: "What is the error message?", options: [
+        { label: "Cannot display the webpage", next: "nd_q5" },
+        { label: "Protected Object This object on the APC Management Web Server is protected.", next: "protected_object" },
+        { label: "Unauthorized user attempting to access Web", next: "redirect_no_display" }]},
+
+      nd_q5: { type: "question", text: "When did they notice the issue?", options: [
+          { label: "Commissioning", next: "nd_nmcled"},
+          { label: "Have been working for some time", next: "nmcworked" }
+      ]},
+      
+
+      
+      nmcworked: {
+        type: "action", text: "Please check what happened recently that might have caused the issue:",steps: [
+          "Notes"
+        ],
+        next: "nd_nmcled"
+      },
+
+
+
+      protected_object: { type: "question", text: "Is this the first time happening?", options: [
+          { label: "Yes", next: "protected_object1"},
+          { label: "No", next: "protected_object2" }
+      ]},
+
+       protected_object1: { type: "action",  steps: [
+        "Make sure the customer is using this url: https://xxx.xxx.xxx.xxx" ], next: "protected_object3" },
+
+      protected_object2: { type: "question", text: "Any changes happened recently in relation to SSL Certificate?", options: [
+          { label: "Yes", next: "protected_object_SSL" },
+          { label: "No", next: "end_escalate" }
+          ]},     
+
+      protected_object_SSL: { type: "action",  steps: [
+        "Enable HTTP via SSH/Telnet",
+        "Ask the customer if there is a need to update the current SSL added to the NMC. Disable SSL.",
+        "Ask customer to delete the current SSL certificate: https://www.se.com/ph/en/faqs/FAQ000233142/ ",
+        "Enable SSL and reboot NMC"], next: "protected_object_SSL1" },   
+
+      protected_object_SSL1: { type: "question", text: "Issue Resolved", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},     
+
+      
+
+
+      nd_nmcled: { type: "question", text: 'What is the NMC Status LED present? You may refer to <a href="https://www.se.com/ph/en/faqs/FA265129/" target="_blank" rel="noopener noreferrer">FA265129.</a> ', options: [
+          { label: "Off", next: "nd_action_led_Off" },
+          { label: "Solid Green", next: "nd_action_led_solid_green" },
+          { label: "Flashing Green", next: "nd_action_led_flashing_green" },
+          { label: "Solid Orange", next: "nd_action_led_solid_orange" }, 
+          { label: "Flickering Orange", next: "nd_action_led_flickering_orange" }
+      ]},
+
+    nd_action_led_flickering_orange: { type: "action",  steps: [
+        "NMC is in Boot Monitor Mode. Reboot or disconnect the cable."], next: "nd_action_led_flickering_orange1" },
+
+    nd_action_led_flickering_orange1: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},   
+
+    nd_action_led_flashing_green: { type: "action",  steps: [
+        "Make sure the NMC is connected to a DHCP server or Static IP is assigned correctly.",
+        "Try to use a known-working network cable and network port (on switch/router).",
+        "Restart the NMC: Reseat or Press the reset button twice.",
+        "Try another known-working UPS or NMC"], next: "nd_action_led_flashing_green1" },
+
+    nd_action_led_flashing_green1: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},   
+
+    nd_action_led_solid_orange: { type: "action",  steps: [
+        "Reseat the NMC",
+        "Access boot monitor and issue factory_reset (https://www.se.com/ph/en/faqs/FA293874/)",
+        "Make sure to request for screen shot or recording"], next: "nd_action_led_solid_orange1" },
+
+    nd_action_led_solid_orange1: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},
+
+    nd_action_led_solid_green: { type: "question", text: "Is the NMC IP pingable?", options: [
+          { label: "Yes", next: "nd_pingable" },
+          { label: "No", next: "nmc_no_cli" }
+          ]},
+
+   
+    nd_pingable: {
+    type: "action",
+    text: `
+        Try to access the NMC via SSH/Telnet
+        <br><br>
+        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=8a4d4bc0-f39a-4980-bfd8-0c72bd0ffedd&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="webCLI.mp4"></iframe>
+
+           
+    `,
+    steps: [
+        "Open Putty/TeraTerm",
+        "Please input the IP address of the NMC",
+        "Choose the connection type/Service as SSH/Telnet. If one fails try the other connection"
+    ],
+    next: "nd_pingable_1"
+},
+
+
+    nd_pingable_1: { type: "question", text: "Is the NMC accessible via SSH/Telnet?", options: [
+          { label: "Yes", next: "nmc_cli" },
+          { label: "No", next: "nmc_no_cli" }
+          ]},
+
+    nmc_cli: { type: "action", text: `
+        Check NMC Web Configuration
+        <br><br>
+        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=8a4d4bc0-f39a-4980-bfd8-0c72bd0ffedd&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="webCLI.mp4"></iframe>
+    `, steps: [
+        "Check if Http/Https is enabled",
+        "If Https is enabled make sure to use https:// when accessing the web."], next: "nd_pingable_2" },
+
+    nd_pingable_2: { type: "question", text: "Is the NMC accessible via Web Interface using HTTPS?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "no_ssl" }
+          ]},    
+
+    no_ssl: { type: "question", text: `
+        Access the NMC via Telnet/SSH and enable HTTP then access the web again. Are they able to access the web?
+        <br><br>
+        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=8a4d4bc0-f39a-4980-bfd8-0c72bd0ffedd&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="webCLI.mp4"></iframe>
+    `, options: [
+          { label: "Yes", next: "nmc_security_wizard" },
+          { label: "No", next: "no_ssl1" }
+          ]},      
+
+
+    no_ssl1: { type: "question", text: 'Please perform a low-level format : <a href="https://www.se.com/ph/en/faqs/FAQ000265969/" target="_blank" rel="noopener noreferrer">FAQ000265969.</a>. Issue resolved?', options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
+          ]},  
+          
+    nmc_security_wizard: { type: "question", text: "Which SSL Configuration Method are they using?", options: [
+          { label: "Default certificate auto-generated", next: "auto_ssl" },
+          { label: "Use the NMC Security Wizard CLI", next: "no_ssl" },
+          { label: "Use the Certificate Authority", next: "no_ssl" },
+          { label: "Customer is not certain", next: "no_ssl" }
+          ]},    
+
+    auto_ssl: { type: "question", text: "Which SSL Configuration Method are they using?", options: [
+          { label: "Default certificate auto-generated", next: "auto_ssl" },
+          { label: "Use the NMC Security Wizard CLI", next: "no_ssl" },
+          { label: "Use the Certificate Authority", next: "no_ssl" },
+          { label: "Customer is not certain", next: "no_ssl" }
+          ]},          
+
+
+    nmc_no_cli: { type: "action", text: "Please access the NMC Locally:",  steps: [
+        "Access the NMC via local connection: https://www.se.com/ph/en/faqs/FA293874/ ",
+        "Check if Http/Https is enabled",
+        "If Https is enabled make sure to use https:// when accessing the web.",
+        "Try to check if Http is enabled. Enable it via SSH/Telnet and check web interface again"], next: "nd_pingable_2" },
+
+
+    mc_cli: { type: "action",  steps: [
+        "Check if Http/Https is enabled",
+        "If Https is enabled make sure to use https:// when accessing the web.",
+        "Try to check if Http is enabled. Enable it via SSH/Telnet"], next: "nd_pingable_1" },    
+
+    
+    nd_action_led_Off: { type: "question", text: 'Is the NMC compatible? Please check NMC compatibility with the UPS using <a href="https://www.se.com/ph/en/faqs/FA237786/" target="_blank" rel="noopener noreferrer">FA237786</a>.', options: [
+          { label: "Yes", next: "nd_action_led_Off1" },
+          { label: "No", next: "not_compatible" }
+          ]},
+
+      not_compatible: { type: "action",  steps: [
+        "Educate the customer and provide recommended unit"], next: "end_not_compatible" },
+
+      end_not_compatible: { type: "end", text: "Educated the customer" },
+
+      nd_action_led_Off1: { type: "question", text: "Check Network Connection by trying a known-working ethernet cable or network port on the switch. Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "nd_action_led_Off2" }
+          ]},
+      
+      nd_action_led_Off2: { type: "question", text: "Try to reseat the NMC or if there is another working identical NMC try to swap to determine the cause. Issue resolved?", options: [
+          { label: "Issue Stays with UPS", next: "end_smartslot" },
+          { label: "No", next: "end_smartslot" },
+          { label: "Issue Stays with NMC or No Available working unit", next: "boot_monitor" }
+          ]},
+      
+      boot_monitor: { type: "question", text: 'Try to access the NMC via Boot Monitor and do factory reset and you can refer to <a href="https://www.se.com/ph/en/faqs/FA293874/" target="_blank" rel="noopener noreferrer">FA293874</a>. Issue resolved?', options: [
+          { label: "LED is now present", next: "nmc_configuration" },
+          { label: "NMC LED is Off", next: "end_escalate" }
+          ]},
+     
+       nmc_configuration: { type: "question", text: 'Try to configure the NMC using <a href="https://www.se.com/ph/en/faqs/FA156064/" target="_blank" rel="noopener noreferrer">FA156064</a>. Issue resolved?', options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "nd_nmcled" }
+          ]},  
+
+      nd_q7: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "nd_q8" }  
+             ]},
+
+      nd_q8: { type: "question", text: "Can the customer try a different Compatible UPS if available?", options: [
+            { label: "Available", next: "avail" },
+            { label: "Not available", next: "end_escalate" }  
+         ]},
+
+      avail: { type: "question", text: "Issue resolved after using a compatible UPS?", options: [
+          { label: "Yes", next: "end_escalate" },
+          { label: "No", next: "end_escalate" }  
+             ]},  
+
+      nd_q9: { type: "question", text: "Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }  
+             ]},  
+
+      nd_q10: { type: "question", text: "Can the customer try a different Compatible UPS if available?", options: [
+            { label: "Yes", next: "end_fixed" },
+            { label: "No", next: "nd_q8" }  
+         ]},
       end_fixed: { type: "end", text: "Issue resolved - Educate the customer" },
       end_smartslot: { type: "end", text: "Informed customer that issue is related to NMC smart-slot and needs to be replaced. Please proceed accordingly." },
       end_escalate: { type: "end", text: "Consult with Advanced" }
@@ -3216,6 +3501,7 @@ function detectModel(model) {
         model.startsWith("AP79") ||
         model.startsWith("AP8") ||
         model.startsWith("APDU") ||
+        model.startsWith("EPDU") ||
         model.startsWith("AP6") ||
         model.startsWith("AP9")
     ) {
