@@ -335,7 +335,9 @@ width: 100%;
     <button id="backBtn" class="nav-btn">◀ Back</button>
     <button id="restartBtn" class="nav-btn">↻ Restart</button>
     <button id="printBtn" class="nav-btn">🖨 Print</button>
-    <button id="exportBtn" class="nav-btn">📄 Export</button>
+    <button id="exportBtn" class="nav-btn" style="display:none;">
+    📄 Export
+</button>
 </nav>
 
 
@@ -4046,6 +4048,62 @@ else if(node.type === 'text') {
     goto(node.next);
 });
 
+startAnotherBtn.addEventListener('click', () => {
+
+    // 1. Export first
+    exportCase();
+
+    // 2. Allow download to start, then reset everything
+    setTimeout(() => {
+
+        // Clear Case Details
+        document.getElementById('caseNumber').value = '';
+        document.getElementById('engineerName').value = '';
+        document.getElementById('mainConcern').value = '';
+        document.getElementById('globalNotes').value = '';
+        document.getElementById('modelInput').value = '';
+        document.getElementById('serialInput').value = '';
+
+        // Reset detected family
+        document.getElementById('detectedFamily').innerHTML =
+            'Product Family: Not Detected';
+
+        // Clear dynamic fields
+        document.getElementById('dynamicFields').innerHTML = '';
+
+        // Reset saved variables
+        savedBatterySerial = "N/A";
+        savedBatteryAge = "N/A";
+        savedNmcWorkedNotes = "N/A";
+        savedManualReason = "N/A";
+        savedSteadyStateDraw = "N/A";
+        savedMaxInrushCurrent = "N/A";
+        savedMaxInrushDuration = "N/A";
+        savedEquipmentModels = "N/A";
+        inrushFieldsAdded = false;
+
+        savedNoPowerWorking = {
+            issueStart: "N/A",
+            recentChanges: "N/A",
+            priorErrors: "N/A",
+            stepsDone: "N/A"
+        };
+
+        // Reset tree state
+        history = [];
+        currentNodeId = null;
+        currentSymptom = null;
+
+        // Clear node display
+        document.getElementById('nodeView').innerHTML = '';
+
+        // Return to symptom selection
+        showSymptomSelection();
+
+    }, 500);
+
+});
+
     nextBtn.addEventListener('click', () => {
 
         window.savedManualReason =
@@ -4213,8 +4271,19 @@ if (currentNodeId === "nmcworked") {
     row.className = 'toolbar';
 
     const restart = document.createElement('button');
-    restart.className = 'btn warn';
-    restart.textContent = 'Start another symptom ⟲';
+
+restart.className = 'btn warn';
+restart.textContent = 'Export Troubleshooting Summary';
+
+restart.addEventListener('click', () => {
+    const exportBtn = document.getElementById('exportBtn');
+
+    if (exportBtn) {
+        exportBtn.click();
+    }
+});
+
+row.appendChild(restart);
 
     row.appendChild(restart);
 
@@ -4322,13 +4391,47 @@ if (backBtn) {
 const restartBtn = document.getElementById('restartBtn');
 if (restartBtn) {
   restartBtn.addEventListener('click', () => {
-    if(!currentSymptom) return;
-    startSymptom(currentSymptom);
+
+    // Clear Case Details
+    document.getElementById('caseNumber').value = '';
+    document.getElementById('engineerName').value = '';
+    document.getElementById('mainConcern').value = '';
+    document.getElementById('globalNotes').value = '';
+    document.getElementById('modelInput').value = '';
+    document.getElementById('serialInput').value = '';
+
+    // Clear detected family
+    document.getElementById('detectedFamily').innerHTML =
+      'Product Family: Not Detected';
+
+    // Clear dynamic fields
+    document.getElementById('dynamicFields').innerHTML = '';
+
+    // Reset saved variables
+    savedBatterySerial = "N/A";
+    savedBatteryAge = "N/A";
+    savedNmcWorkedNotes = "N/A";
+    savedManualReason = "N/A";
+    savedSteadyStateDraw = "N/A";
+    savedMaxInrushCurrent = "N/A";
+    savedMaxInrushDuration = "N/A";
+    savedEquipmentModels = "N/A";
+    inrushFieldsAdded = false;
+
+    savedNoPowerWorking = {
+      issueStart: "N/A",
+      recentChanges: "N/A",
+      priorErrors: "N/A",
+      stepsDone: "N/A"
+    };
+
+    // Clear history and decision tree
+    history = [];
+    currentSymptom = null;
+    currentNodeId = null;
+
+    document.getElementById('nodeView').innerHTML = '';
   });
-}
-const printBtn = document.getElementById('printBtn');
-if (printBtn) {
-  printBtn.addEventListener('click', () => window.print());
 }
 
 
@@ -4394,6 +4497,8 @@ function stripHtml(html) {
   div.innerHTML = html;
   return div.textContent || div.innerText || "";
 }
+
+
 
 exportBtn.addEventListener('click', () => {
   const lines = [];
