@@ -2644,25 +2644,10 @@ no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try t
 
     nmc_cli_fw_3: { type: "question", text: "Kindly upgrade the firmware to the latest that is available. Issue resolved?", options: [
           { label: "Yes", next: "end_fixed" },
-          { label: "No", next: "nmc_cli_notresolved" }
+          { label: "No", next: "nmc_notaccessible_cli" }
           ]},
 
-    nmc_cli_notresolved: {
-    type: "action",
-    text: `
-        Try to access the NMC via SSH/Telnet
-        <br><br>
-        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=33d2edcc-bed9-41e5-a564-f205e10516f8&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="CLIFirmware.mp4"></iframe>
-
-           
-    `,
-    steps: [
-        "Open Putty/TeraTerm",
-        "Please input the IP address of the NMC",
-        "Choose the connection type/Service as SSH/Telnet. If one fails try the other connection"
-    ],
-    next: "end_escalate"
-},
+   
 
 
 
