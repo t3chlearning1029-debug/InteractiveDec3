@@ -2585,8 +2585,86 @@ no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try t
 
       nd_q4: { type: "question", text: "What is the error message?", options: [
         { label: "Cannot display the webpage", next: "nd_q5" },
+        { label: "The Application is Incompatible with This APC OS", next: "app_incompatible" },
         { label: "Protected Object This object on the APC Management Web Server is protected.", next: "protected_object" },
         { label: "Unauthorized user attempting to access Web", next: "redirect_no_display" }]},
+
+
+      app_incompatible: { type: "question", text: "This is indicates that there is a mismatch on the NMC firmware. Did they upgrade the NMC firmware recently?", options: [
+          { label: "Yes", next: "app_incompatible_not_updated"},
+          { label: "No", next: "app_incompatible_not_updated" }
+      ]},
+
+      app_incompatible_not_updated: { type: "question", text: "When did they notice the issue?", options: [
+          { label: "Commissioning", next: "nmc_cli_fw"},
+          { label: "Have been working for some time", next: "nmc_cli_fw" }
+      ]},
+
+
+      nmc_cli_fw: {
+    type: "action",
+    text: `
+        Try to access the NMC via SSH/Telnet
+        <br><br>
+        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=33d2edcc-bed9-41e5-a564-f205e10516f8&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="CLIFirmware.mp4"></iframe>
+
+           
+    `,
+    steps: [
+        "Open Putty/TeraTerm",
+        "Please input the IP address of the NMC",
+        "Choose the connection type/Service as SSH/Telnet. If one fails try the other connection"
+    ],
+    next: "nmc_cli_fw_1"
+},
+
+
+    nmc_cli_fw_1: { type: "question", text: "Is the NMC accessible via SSH/Telnet?", options: [
+          { label: "Yes", next: "nmc_cli_fw_2" },
+          { label: "No", next: "nmc_notaccessible_cli" }
+          ]},
+
+    nmc_notaccessible_cli: { type: "question", text: 'Please access the NMC via bootmonitor and you can refer to <a href="https://www.se.com/mk/en/faqs/FA293874/" target="_blank" rel="noopener noreferrer">FA293874</a>. Is it accessible? ', options: [
+          { label: "Yes", next: "nmc_cli_fw_3" },
+          { label: "No", next: "not_accessible_bm" }
+          ]},
+
+    not_accessible_bm: { type: "action", text: 'Please make sure to take note of the following:', steps: [
+           "NMC LED",
+           "Cable used",
+           "Screen shot of the Terminal"
+          ], next: "end_escalate"},
+
+
+
+    nmc_cli_fw_2: { type: "question", text: "Kindly check with the current firmware running on the NMC. Compare it to firmware file available on our website and compare they are the correct pair. Do they match?", options: [
+          { label: "Yes", next: "nmc_cli_fw_3" },
+          { label: "No", next: "nmc_no_cli" }
+          ]},
+
+    nmc_cli_fw_3: { type: "question", text: "Kindly upgrade the firmware to the latest that is available. Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "nmc_cli_notresolved" }
+          ]},
+
+    nmc_cli_notresolved: {
+    type: "action",
+    text: `
+        Try to access the NMC via SSH/Telnet
+        <br><br>
+        <iframe src="https://schneiderelectric-my.sharepoint.com/personal/sesa176091_se_com/_layouts/15/embed.aspx?UniqueId=33d2edcc-bed9-41e5-a564-f205e10516f8&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="CLIFirmware.mp4"></iframe>
+
+           
+    `,
+    steps: [
+        "Open Putty/TeraTerm",
+        "Please input the IP address of the NMC",
+        "Choose the connection type/Service as SSH/Telnet. If one fails try the other connection"
+    ],
+    next: "end_escalate"
+},
+
+
 
       nd_q5: { type: "question", text: "When did they notice the issue?", options: [
           { label: "Commissioning", next: "nd_nmcled"},
