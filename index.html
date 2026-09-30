@@ -2639,7 +2639,7 @@ no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try t
 
     nmc_cli_fw_2: { type: "question", text: "Kindly check with the current firmware running on the NMC. Compare it to firmware file available on our website and compare they are the correct pair. Do they match?", options: [
           { label: "Yes", next: "nmc_cli_fw_3" },
-          { label: "No", next: "nmc_no_cli" }
+          { label: "No", next: "mc_cli_fw_3" }
           ]},
 
     nmc_cli_fw_3: { type: "question", text: "Kindly upgrade the firmware to the latest that is available. Issue resolved?", options: [
