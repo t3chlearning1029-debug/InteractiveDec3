@@ -2644,7 +2644,18 @@ no_power_install4: { type: "question", text: 'The Circuit Breaker tripped, try t
 
     nmc_cli_fw_3: { type: "question", text: "Kindly upgrade the firmware to the latest that is available. Issue resolved?", options: [
           { label: "Yes", next: "end_fixed" },
-          { label: "No", next: "nmc_notaccessible_cli" }
+          { label: "No", next: "nmc_notaccessible_cli1" }
+          ]},
+
+
+    nmc_notaccessible_cli1: { type: "question", text: 'Please access the NMC via bootmonitor and you can refer to <a href="https://www.se.com/mk/en/faqs/FA293874/" target="_blank" rel="noopener noreferrer">FA293874</a>. Is it accessible? ', options: [
+          { label: "Yes", next: "nmc_cli_fw_4" },
+          { label: "No", next: "not_accessible_bm" }
+          ]},
+
+    nmc_cli_fw_4: { type: "question", text: "Kindly upgrade the firmware to the latest that is available via Boot Monitor. Issue resolved?", options: [
+          { label: "Yes", next: "end_fixed" },
+          { label: "No", next: "end_escalate" }
           ]},
 
    
